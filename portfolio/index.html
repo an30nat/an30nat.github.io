@@ -82,6 +82,15 @@
   }
   .btn-main { background:var(--color-accent); color:#fff; }
   .btn-ghost { border:1px solid var(--color-line-inverse,#3A3532); color:var(--color-text-inverse); }
+  .hero { display:grid; grid-template-columns:1fr 260px; gap:48px; align-items:center; }
+  .hero-photo {
+    width:100%; height:auto; aspect-ratio:4/5; object-fit:cover; object-position:50% 30%;
+    border-radius:var(--radius-md,16px); border:1px solid var(--color-line-inverse,#3A3532);
+  }
+  @media (max-width:720px) {
+    .hero { grid-template-columns:1fr; gap:28px; }
+    .hero-photo { width:160px; order:-1; }
+  }
 
   section { padding:56px 0; border-bottom:1px solid var(--color-line); }
   section:last-of-type { border-bottom:none; }
@@ -188,7 +197,8 @@
 <body>
 
 <header>
-  <div class="wrap">
+  <div class="wrap hero">
+    <div>
     <div class="eyebrow">Портфолио · защита ЛАБС 6.0 · сентябрь 2026</div>
     <h1>Наталья Антонова</h1>
     <p class="lead">Шесть лет вела кабинеты Wildberries. За поток собрала шесть работ:
@@ -199,6 +209,8 @@
       <a class="btn btn-main" href="https://t.me/antonova_pro_wb">Написать в Telegram</a>
       <a class="btn btn-ghost" href="https://an30nat.github.io">Лендинг «Сторожа»</a>
     </div>
+    </div>
+    <img class="hero-photo" src="img/foto-natalya.jpg" alt="Наталья Антонова за ноутбуком" width="720" height="894">
   </div>
 </header>
 
