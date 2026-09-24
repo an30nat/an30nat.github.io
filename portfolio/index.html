@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Наталья Антонова — портфолио вайбкодера</title>
+<meta name="description" content="Шесть работ за поток ЛАБС: ИИ-агент на своём сервере, лендинг с дизайн-системой, планер в Google Таблицах, два скилла для Claude и CRM.">
+<link rel="canonical" href="https://an30nat.github.io/portfolio/">
+
+<meta property="og:type" content="profile">
+<meta property="og:title" content="Наталья Антонова — портфолио вайбкодера">
+<meta property="og:description" content="Шесть работ за поток ЛАБС: ИИ-агент на своём сервере, лендинг с дизайн-системой, планер, два скилла для Claude и CRM. Код пишет ИИ — я ставлю задачу и принимаю работу.">
+<meta property="og:url" content="https://an30nat.github.io/portfolio/">
+<meta property="og:image" content="https://an30nat.github.io/portfolio/img/crm-voronka.jpg">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%231A1817%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-family=%22Arial,sans-serif%22 font-size=%2216%22 font-weight=%22bold%22 fill=%22%23E85C10%22 text-anchor=%22middle%22%3EН%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-bg-primary:#F4F1EE;
+    --color-bg-secondary:#E7E2DC;
+    --color-surface:#FBFAF8;
+    --color-surface-sunken:#EFEBE6;
+    --color-bg-inverse:#1A1817;
+    --color-bg-inverse-soft:#272321;
+    --color-text-primary:#1A1817;
+    --color-text-secondary:#4A4542;
+    --color-text-muted:#6E6763;
+    --color-text-inverse:#F4F1EE;
+    --color-text-inverse-soft:#B8B0AA;
+    --color-line:#DDD6CF;
+    --color-line-strong:#C6BDB4;
+    --color-accent:#E85C10;
+    --color-accent-hover:#C74A08;
+    --color-accent-soft:#FBE3D2;
+    --color-signal:#C62128;
+    --color-calm:#0E7682;
+    --color-calm-soft:#DAEAEC;
+    --color-ochre:#B98514;
+    --color-ochre-soft:#F5E8CC;
+    --font-display:"Unbounded","Golos Text",Georgia,serif;
+    --font-text:"Golos Text","Segoe UI",system-ui,-apple-system,sans-serif;
+    --space-sm:16px; --space-md:24px; --space-lg:32px; --space-xl:48px;
+    --radius-sm:8px; --radius-md:14px; --radius-lg:24px;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--color-bg-primary); color:var(--color-text-primary);
+    font-family:var(--font-text); font-size:17px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  img { max-width:100%; display:block; }
+  a { color:var(--color-accent); }
+
+  .wrap { max-width:940px; margin:0 auto; padding:0 20px; }
+
+  header {
+    background:var(--color-bg-inverse); color:var(--color-text-inverse);
+    padding:64px 0 72px;
+  }
+  .eyebrow {
+    font-size:0.72rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--color-accent); font-weight:600;
+  }
+  header h1 {
+    font-family:var(--font-display); font-weight:600;
+    font-size:clamp(2.1rem,5vw,3.4rem); line-height:1.12; letter-spacing:-.02em;
+    margin:14px 0 0;
+  }
+  header .lead {
+    font-size:clamp(1.02rem,1.5vw,1.2rem); color:var(--color-text-inverse-soft);
+    max-width:640px; margin:18px 0 0;
+  }
+  .header-links { margin-top:30px; display:flex; flex-wrap:wrap; gap:12px; }
+  .btn {
+    display:inline-block; padding:13px 22px; border-radius:999px;
+    text-decoration:none; font-weight:600; font-size:0.95rem;
+  }
+  .btn-main { background:var(--color-accent); color:#fff; }
+  .btn-ghost { border:1px solid var(--color-line-inverse,#3A3532); color:var(--color-text-inverse); }
+
+  section { padding:56px 0; border-bottom:1px solid var(--color-line); }
+  section:last-of-type { border-bottom:none; }
+  h2 {
+    font-family:var(--font-display); font-weight:600;
+    font-size:clamp(1.5rem,3vw,2.1rem); letter-spacing:-.01em; margin:0 0 8px;
+  }
+  .section-note { color:var(--color-text-muted); margin:0 0 28px; font-size:1rem; }
+
+  .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; }
+  .fact {
+    background:var(--color-surface); border:1px solid var(--color-line);
+    border-radius:var(--radius-md); padding:20px;
+  }
+  .fact b {
+    font-family:var(--font-display); font-size:1.7rem; display:block;
+    color:var(--color-accent); line-height:1.1;
+  }
+  .fact span { color:var(--color-text-muted); font-size:0.9rem; }
+
+  .work {
+    background:var(--color-surface); border:1px solid var(--color-line);
+    border-radius:var(--radius-lg); padding:28px; margin-bottom:18px;
+  }
+  .work-head { display:flex; flex-wrap:wrap; gap:12px; align-items:baseline; justify-content:space-between; }
+  .work h3 { font-family:var(--font-display); font-weight:600; font-size:1.3rem; margin:0; }
+  .status {
+    font-size:0.72rem; letter-spacing:.1em; text-transform:uppercase; font-weight:600;
+    padding:5px 12px; border-radius:999px; white-space:nowrap;
+  }
+  .st-work { background:var(--color-calm-soft); color:var(--color-calm); }
+  .st-live { background:var(--color-accent-soft); color:var(--color-accent-hover); }
+  .st-sale { background:var(--color-ochre-soft); color:var(--color-ochre); }
+  .st-demo { background:var(--color-surface-sunken); color:var(--color-text-muted); }
+  .work p { margin:14px 0 0; color:var(--color-text-secondary); }
+  .work dl { margin:18px 0 0; display:grid; grid-template-columns:auto 1fr; gap:8px 18px; font-size:0.96rem; }
+  .work dt {
+    font-size:0.72rem; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--color-text-muted); font-weight:600; padding-top:3px;
+  }
+  .work dd { margin:0; color:var(--color-text-secondary); }
+  .work figure { margin:22px 0 0; }
+  .work figure img { border:1px solid var(--color-line); border-radius:var(--radius-md); }
+  .work figcaption { color:var(--color-text-muted); font-size:0.85rem; margin-top:10px; }
+  .work .link { display:inline-block; margin-top:16px; font-weight:600; }
+
+  .honest {
+    background:var(--color-bg-secondary); border-left:4px solid var(--color-signal);
+    border-radius:0 var(--radius-md) var(--radius-md) 0; padding:22px 24px;
+  }
+  .honest p { margin:0; }
+  .honest p + p { margin-top:10px; }
+
+  .skills { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+  .skill {
+    background:var(--color-surface); border:1px solid var(--color-line);
+    border-radius:var(--radius-md); padding:20px;
+  }
+  .skill b { display:block; margin-bottom:6px; }
+  .skill span { color:var(--color-text-muted); font-size:0.9rem; }
+  .where {
+    display:inline-block; margin-top:10px; font-size:0.78rem; color:var(--color-calm);
+    border-bottom:1px solid var(--color-calm-soft); font-weight:600;
+  }
+
+  ol.steps { counter-reset:s; list-style:none; padding:0; margin:0; }
+  ol.steps li { position:relative; padding-left:48px; margin-bottom:20px; }
+  ol.steps li::before {
+    counter-increment:s; content:counter(s);
+    position:absolute; left:0; top:0; width:34px; height:34px; border-radius:50%;
+    background:var(--color-accent); color:#fff; font-weight:700;
+    display:flex; align-items:center; justify-content:center; font-size:0.95rem;
+  }
+  ol.steps b { display:block; }
+  ol.steps span { color:var(--color-text-muted); font-size:0.95rem; }
+
+  footer {
+    background:var(--color-bg-inverse); color:var(--color-text-inverse);
+    padding:56px 0;
+  }
+  footer h2 { color:var(--color-text-inverse); }
+  footer p { color:var(--color-text-inverse-soft); }
+  .contacts { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:26px; }
+  .contact {
+    border:1px solid #3A3532; border-radius:var(--radius-md); padding:18px 20px;
+  }
+  .contact span {
+    display:block; font-size:0.72rem; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--color-text-inverse-soft); margin-bottom:6px;
+  }
+  .contact a { color:var(--color-text-inverse); text-decoration:none; font-weight:600; word-break:break-all; }
+  .small { color:var(--color-text-muted); font-size:0.85rem; }
+
+  @media (max-width:560px) {
+    body { font-size:16px; }
+    header { padding:44px 0 52px; }
+    section { padding:42px 0; }
+    .work { padding:22px; }
+    .work dl { grid-template-columns:1fr; gap:4px 0; }
+    .work dt { padding-top:12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Портфолио · защита ЛАБС 6.0 · сентябрь 2026</div>
+    <h1>Наталья Антонова</h1>
+    <p class="lead">Шесть лет вела кабинеты Wildberries. За поток собрала шесть работ:
+       ИИ-агента на своём сервере, лендинг с дизайн-системой, планер в Google Таблицах,
+       два скилла для Claude и CRM. Код пишет ИИ — я ставлю задачу, ищу ошибки и
+       принимаю работу.</p>
+    <div class="header-links">
+      <a class="btn btn-main" href="https://t.me/antonova_pro_wb">Написать в Telegram</a>
+      <a class="btn btn-ghost" href="https://an30nat.github.io">Лендинг «Сторожа»</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section>
+  <div class="wrap">
+    <h2>Кем я была</h2>
+    <p class="section-note">И с какой задачей пришла в ЛАБС</p>
+    <p>Шесть лет я вела кабинеты Wildberries и знаю изнутри, где магазин тихо теряет
+       деньги: удержания замечают через месяц, о закрытой карточке узнают по провалу
+       продаж, а кончившийся товар обнаруживается за четыре дня до поставки. С этой
+       боли начался мой главный проект.</p>
+    <p>В ЛАБС я пришла с вопросом: соединить Wildberries с ИИ или найти новое
+       направление для заработка. За поток получилось и то, и другое.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Шесть работ</h2>
+    <p class="section-note">Каждая со своим статусом. Всё перечисленное можно открыть или проверить.</p>
+
+    <article class="work">
+      <div class="work-head">
+        <h3>1. ИИ-агент Ada на своём сервере</h3>
+        <span class="status st-work">работает</span>
+      </div>
+      <p>Не облачный бот, а помощник с памятью, характером и доступом к файлам,
+         который работает без присмотра и отвечает только владельцу.</p>
+      <dl>
+        <dt>Решение</dt>
+        <dd>Отдельный пользователь на сервере, общение в Telegram, автоперезапуск через cron и tmux, знания подтягиваются с внешней платформы каждые десять минут</dd>
+        <dt>Стек</dt>
+        <dd>Claude Code · Linux / SSH · Telegram Bot API · cron + tmux · Python · OAuth</dd>
+        <dt>Проверено</dt>
+        <dd>Подъём за 20 секунд после внезапной перезагрузки сервера. Два тихих сбоя найдены и исправлены при диагностике. Ноль команд от сторонних сервисов выполнено без подтверждения владельца</dd>
+      </dl>
+      <figure>
+        <img src="img/agent-dashboard.jpg" alt="Веб-дашборд агента: расписание детей и напоминания на неделю" loading="lazy">
+        <figcaption>Веб-дашборд: расписание и напоминания, пересобирается сам каждые 30 минут. Имена детей на скриншоте скрыты.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/agent-telegram.jpg" alt="Агент отвечает в Telegram: разбор и связка нескольких источников" loading="lazy">
+        <figcaption>Агент в Telegram: связывает разные источники за сутки и выдаёт один вывод.</figcaption>
+      </figure>
+      <p class="small">Ссылки нет: агент личный и закрыт для чужих.</p>
+    </article>
+
+    <article class="work">
+      <div class="work-head">
+        <h3>2. «Сторож» — лендинг и дизайн-система</h3>
+        <span class="status st-live">опубликован</span>
+      </div>
+      <p>Утренняя сводка по магазину Wildberries в Telegram: продажи, прибыль, остатки
+         и блокировки в одном сообщении. Лендинг для продавцов, которые начинают утро с кабинета.</p>
+      <dl>
+        <dt>Сделано</dt>
+        <dd>Бриф, стоп-лист и палитра → дизайн-система на 18 разделов → лендинг на её токенах → публикация. От брифа до опубликованного сайта — один день</dd>
+        <dt>Приём</dt>
+        <dd>Каждый блок отвечает на страх или вопрос продавца: что сервис просит и чего не просит никогда, что приходит утром, честный блок «кому пока рано» вместо обещаний всем</dd>
+        <dt>Моё</dt>
+        <dd>Бриф, направление, приёмка каждой итерации, публикация. Код писал ИИ</dd>
+      </dl>
+      <figure>
+        <img src="img/storozh-pervyj-ekran.jpg" alt="Первый экран лендинга: обещание и пример сводки в Telegram" loading="lazy">
+        <figcaption>Первый экран: обещание и рядом пример того самого сообщения, которое придёт в восемь утра.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/storozh-chetyre-bloka.jpg" alt="Блок лендинга: четыре блока сводки на один экран телефона" loading="lazy">
+        <figcaption>Что приходит утром: продажи, прибыль без прикрас, остатки и отдельные сигналы — один экран телефона.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/storozh-bezopasnost.jpg" alt="Блок лендинга: что сервис просит и чего не просит никогда" loading="lazy">
+        <figcaption>Блок про безопасность: короткий проверяемый список прав вместо общих слов о надёжности.</figcaption>
+      </figure>
+      <a class="link" href="https://an30nat.github.io">Открыть сайт →</a>
+    </article>
+
+    <article class="work">
+      <div class="work-head">
+        <h3>3. Недельный планер в Google Таблицах</h3>
+        <span class="status st-sale">готов к продаже</span>
+      </div>
+      <p>Задачи, привычки и прогресс по дням в одном файле. Работает у покупателя
+         сразу после копирования — без дополнений и запросов доступа.</p>
+      <dl>
+        <dt>Сделано</dt>
+        <dd>Сетка недели, кольца прогресса, архив недели одной галочкой, скрипты на Apps Script</dd>
+        <dt>Находки</dt>
+        <dd>Прошла путь покупателя с чистой копии и нашла то, чего не видно автору: привычки не сбрасывались на новой неделе, дата застывала на моей неделе, Google показывал предупреждение при первом клике. Кнопку заменила галочкой на простом триггере — разрешения больше не нужны</dd>
+        <dt>Цена</dt>
+        <dd>990 ₽, шаблон плюс версия для Excel. Продаж пока не было</dd>
+      </dl>
+      <figure>
+        <img src="img/planer-nedelya.jpg" alt="Недельный планер: кольца прогресса по дням, привычки, задачи" loading="lazy">
+        <figcaption>Неделя целиком: кольца прогресса по дням, боковая панель с итогами, привычки и задачи.</figcaption>
+      </figure>
+      <p class="small">Копию высылаю в Telegram по запросу.</p>
+    </article>
+
+    <article class="work">
+      <div class="work-head">
+        <h3>4. Скилл «Матрица судьбы» для Claude</h3>
+        <span class="status st-work">работает</span>
+      </div>
+      <p>Разбор по дате рождения: схема, карта здоровья, этапы жизни. Восемь модулей,
+         три режима — взрослый, детский, совместимость пары.</p>
+      <dl>
+        <dt>Проверка</dt>
+        <dd>Расчёт сверен с двумя независимыми источниками — числа сошлись. Автотест на контрольных значениях проходит</dd>
+        <dt>Принцип</dt>
+        <dd>Где формулу не подтвердить — прочерк, а не выдуманное число</dd>
+      </dl>
+      <figure>
+        <img src="img/skill-matrica.jpg" alt="Разбор матрицы: схема и карта здоровья по зонам жизни" loading="lazy">
+        <figcaption>Схема матрицы и карта здоровья по зонам жизни. Дата на примере тестовая.</figcaption>
+      </figure>
+    </article>
+
+    <article class="work">
+      <div class="work-head">
+        <h3>5. Скилл Nat.ai — система ведения блога</h3>
+        <span class="status st-work">собран</span>
+      </div>
+      <p>Faceless-аккаунт про ИИ: от регистрации до аналитики и монетизации.
+         Десять справочников — ниша, хуки, сцена, сценарии роликов.</p>
+    </article>
+
+    <article class="work">
+      <div class="work-head">
+        <h3>6. CRM для установок «Сторожа»</h3>
+        <span class="status st-demo">первый срез, демо-данные</span>
+      </div>
+      <p>Вести установку клиентам от заявки до абонентки: воронка из пяти этапов,
+         деньги, доступы, чек-лист установки.</p>
+      <dl>
+        <dt>Сделано</dt>
+        <dd>Деньги отдельной линией: предоплата, остаток, абонентка, просрочки. Токены клиентов скрыты, каждый показ пишется в журнал. На следующий этап не пустит, пока не закрыт чек-лист</dd>
+        <dt>Учебная среда</dt>
+        <dd>Кнопки «+1 день», «+35 дней» — проверить поведение сроков, не дожидаясь их наступления</dd>
+        <dt>Дальше</dt>
+        <dd>Сценарий приёмки из 14 шагов написан, прохожу его следующим шагом</dd>
+      </dl>
+      <figure>
+        <img src="img/crm-voronka.jpg" alt="Воронка CRM: пять этапов, деньги, задачи на сегодня" loading="lazy">
+        <figcaption>Воронка: сколько оплачено, сколько ждём, где просрочка. Данные синтетические.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/crm-klient.jpg" alt="Карточка клиента: сделка, деньги, доступы, чек-лист установки" loading="lazy">
+        <figcaption>Карточка клиента: деньги, документы, доступы и чек-лист, который не пускает дальше.</figcaption>
+      </figure>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Честно про результат</h2>
+    <div class="honest">
+      <p><b>Продаж пока нет, и придумывать их я не буду.</b> За поток я построила
+         инструменты, а не выручку.</p>
+      <p>Всё перечисленное можно открыть или проверить: лендинг опубликован, агент
+         работает каждый день, планер готов к продаже, CRM собрана на демо-данных.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Что я теперь умею</h2>
+    <p class="section-note">Было: шесть лет в кабинетах Wildberries. Стало — вот это, и каждое видно в проектах.</p>
+    <div class="skills">
+      <div class="skill">
+        <b>Довожу идею до опубликованного сайта за день</b>
+        <span>Бриф, дизайн-система, лендинг, публикация</span>
+        <span class="where">видно в «Стороже»</span>
+      </div>
+      <div class="skill">
+        <b>Разворачиваю ИИ-агента на сервере и чиню его</b>
+        <span>Права, доступ, автоперезапуск, диагностика сбоев</span>
+        <span class="where">видно в агенте</span>
+      </div>
+      <div class="skill">
+        <b>Ставлю ИИ задачу как исполнителю и принимаю работу</b>
+        <span>ТЗ, сценарий приёмки, поиск багов, которых не видит автор</span>
+        <span class="where">видно в CRM и планере</span>
+      </div>
+      <div class="skill">
+        <b>Упаковываю знания в продукт</b>
+        <span>Шаблон на продажу, скилл с автотестом и базой знаний</span>
+        <span class="where">видно в планере и скиллах</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Что дальше</h2>
+    <p class="section-note">Ставлю на CRM на заказ. Ориентир по чеку взяла с эфира: за платформу или CRM не браться меньше чем за 150 000 ₽, а у первого потока был кейс на 700 000 ₽.</p>
+    <ol class="steps">
+      <li><b>Пройти приёмку руками</b><span>По своему сценарию из 14 шагов</span></li>
+      <li><b>Развернуть CRM на сервере</b><span>Чтобы появилась ссылка, которую можно открыть</span></li>
+      <li><b>Провести первого клиента</b><span>Тогда кейс звучит как «работает в деле», а не «собрано»</span></li>
+    </ol>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <h2>Что могу делать для бизнеса</h2>
+    <p>Разворачивать персональных ИИ-агентов на сервере заказчика. Собирать лендинги
+       вместе с дизайн-системой. Делать внутренние инструменты и CRM. Упаковывать
+       знания в шаблоны и скиллы.</p>
+    <div class="contacts">
+      <div class="contact">
+        <span>Telegram</span>
+        <a href="https://t.me/antonova_pro_wb">@antonova_pro_wb</a>
+      </div>
+      <div class="contact">
+        <span>Лендинг «Сторожа»</span>
+        <a href="https://an30nat.github.io">an30nat.github.io</a>
+      </div>
+      <div class="contact">
+        <span>Планер и демо скиллов</span>
+        <a href="https://t.me/antonova_pro_wb">пришлю по запросу</a>
+      </div>
+    </div>
+    <p class="small" style="margin-top:28px">Обновлено 24 сентября 2026 года.</p>
+  </div>
+</footer>
+
+</body>
+</html>
