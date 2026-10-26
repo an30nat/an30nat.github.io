@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ИИ-отдел WB · демо</title>
+<style>
+  :root{
+    --bg:#e7ebf0; --chat:#cfd9e3; --in:#ffffff; --out:#e1f7d0; --ink:#1f2328; --muted:#6b7480;
+    --head:#ffffff; --line:#dde3ea; --btn:#eef3f8; --btn-ink:#2a77c0; --warn:#fff4e0; --warn-ink:#a3610b;
+    --tab:#ffffff; --tab-on:#2a77c0;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1621; --chat:#0e1621; --in:#182533; --out:#2b5278; --ink:#e9eef3; --muted:#8a99a8;
+      --head:#17212b; --line:#22303e; --btn:#1f3043; --btn-ink:#6ab3f3; --warn:#3a2c14; --warn-ink:#f0b860;
+      --tab:#17212b; --tab-on:#6ab3f3;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1621; --chat:#0e1621; --in:#182533; --out:#2b5278; --ink:#e9eef3; --muted:#8a99a8;
+    --head:#17212b; --line:#22303e; --btn:#1f3043; --btn-ink:#6ab3f3; --warn:#3a2c14; --warn-ink:#f0b860;
+    --tab:#17212b; --tab-on:#6ab3f3;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:560px;margin:0 auto;min-height:100vh;background:var(--chat);display:flex;flex-direction:column}
+  .note{background:var(--warn);color:var(--warn-ink);font-size:13px;padding:8px 16px;text-align:center}
+  header{background:var(--head);padding:10px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+  header b{display:block;font-size:17px}
+  header span{font-size:13px;color:var(--muted)}
+  .tabs{display:flex;background:var(--tab);border-bottom:1px solid var(--line)}
+  .tabs button{flex:1;border:0;background:none;color:var(--muted);font:600 14px/1 inherit;padding:12px 6px;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit}
+  .tabs button.on{color:var(--tab-on);border-color:var(--tab-on)}
+  .feed{padding:12px 10px 40px;display:flex;flex-direction:column;gap:8px}
+  .day{align-self:center;font-size:12px;color:var(--muted);background:var(--head);padding:3px 10px;border-radius:999px;margin:4px 0}
+  .msg{max-width:88%;background:var(--in);border-radius:14px 14px 14px 4px;padding:8px 11px 6px;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+  .msg.me{align-self:flex-end;background:var(--out);border-radius:14px 14px 4px 14px}
+  .who{font-weight:700;font-size:14px;margin-bottom:2px}
+  .t{font-size:11px;color:var(--muted);text-align:right;margin-top:2px}
+  .msg p{margin:0 0 6px}
+  .msg ul{margin:0 0 6px;padding-left:18px}
+  .alert{background:var(--warn);color:var(--warn-ink);border-radius:8px;padding:6px 8px;margin:4px 0 6px;font-size:15px}
+  .kb{display:grid;gap:6px;margin-top:6px}
+  .kb.two{grid-template-columns:1fr 1fr}
+  .kb button{border:0;border-radius:8px;background:var(--btn);color:var(--btn-ink);font:600 14px/1.2 inherit;padding:9px 6px;cursor:pointer;font-family:inherit}
+  .kb button:disabled{opacity:.55;cursor:default}
+  .hidden{display:none}
+  .c1{color:#d9822b}.c2{color:#3a9b5c}.c3{color:#2a77c0}.c4{color:#9b59b6}.c5{color:#c0392b}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .c3{color:#6ab3f3}}
+  footer{font-size:12px;color:var(--muted);text-align:center;padding:0 16px 24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="note">Пример. Магазин выдуманный, все цифры условные</div>
+  <header><b>ИИ-отдел · магазин «Тёплый дом»</b><span>5 ботов и владелец</span></header>
+  <div class="tabs">
+    <button class="on" data-tab="otdel">ИИ-отдел, 5 ботов</button>
+    <button data-tab="svodka">Утренняя сводка</button>
+  </div>
+
+  <section class="feed" id="otdel">
+    <div class="day">Сегодня</div>
+
+    <div class="msg"><div class="who c1">📊 Статистика</div>
+      <p>Вчера <b>46 заказов</b> на 87 400 ₽. Среднее за 7 дней — 52, так что это <b>на 12% ниже нормы</b>.</p>
+      <p>Остатки: «Плед флисовый серый» закончится через <b>6 дней</b> при текущих продажах.</p>
+      <div class="t">09:00</div></div>
+
+    <div class="msg"><div class="who c2">🔎 Конкурентка</div>
+      <p>Главный конкурент по пледу снизил цену с 1 290 до <b>1 190 ₽</b>. По запросу «плед флисовый» мы съехали с 3-го места на 5-е. Вероятно, отсюда и минус в заказах.</p>
+      <div class="t">09:05</div></div>
+
+    <div class="msg"><div class="who c3">📣 Реклама</div>
+      <p>Вчера на рекламу ушло 6 840 ₽, ДРР 7,8% при цели 10%.</p>
+      <p>3 запроса за 14 дней потратили 1 120 ₽ и не дали ни одного заказа: «плед детский», «покрывало на диван», «плед с рукавами». Добавила их в минус-фразы: это в моём коридоре, я делаю сама и сообщаю.</p>
+      <p>Чтобы вернуть 3-е место, предлагаю поднять ставку на плед на <b>35%</b>.</p>
+      <div class="alert">⚠️ Это вне коридора в 20%, нужно подтверждение владельца</div>
+      <div class="t">09:30</div></div>
+
+    <div class="msg"><div class="who c4">💰 Финансист</div>
+      <p>Возражаю. Сейчас реклама стоит ~180 ₽ на заказ (6 840 ₽ на 38 заказов), а прибыль с пледа до рекламы — <b>214 ₽</b> за штуку. Со ставкой +35% реклама выйдет около 240 ₽, и каждый плед с рекламы уйдёт в <b>минус ~26 ₽</b>.</p>
+      <p>И второе: пледа на 6 дней. Разгонять рекламу на товар, который заканчивается, — платить за пустую полку.</p>
+      <div class="t">09:31</div></div>
+
+    <div class="msg"><div class="who c3">📣 Реклама</div>
+      <p>Про остатки согласна. Предлагаю мягче: <b>+15%</b>, это в коридоре, а к +35% вернуться после поставки.</p>
+      <div class="t">09:32</div></div>
+
+    <div class="msg"><div class="who c5">🧭 Начальник отдела</div>
+      <p><b>Нужно ваше решение:</b></p>
+      <ul>
+        <li>ставка на плед: Реклама предлагала +35%, Финансист против, Реклама согласна на +15%;</li>
+        <li>поставка пледа: остатков на 6 дней.</li>
+      </ul>
+      <p><b>В порядке:</b> ДРР ниже цели, лишние запросы убраны.</p>
+      <div class="kb two" id="decide">
+        <button data-v="15">✅ +15%</button>
+        <button data-v="35">⚠️ +35%</button>
+        <button data-v="0">✋ Не трогать</button>
+        <button data-v="post">📦 Напомни про поставку</button>
+      </div>
+      <div class="t">09:40</div></div>
+
+    <div id="replies"></div>
+  </section>
+
+  <section class="feed hidden" id="svodka">
+    <div class="day">Сегодня</div>
+    <div class="msg"><div class="who c3">🤖 Агент кабинета</div>
+      <p><b>Реклама за вчера</b></p>
+      <ul>
+        <li>Расход: 6 840 ₽</li>
+        <li>Заказы с рекламы: 38</li>
+        <li>ДРР: 7,8% (цель 10%) ✅</li>
+      </ul>
+      <p><b>Съели деньги без заказов, 14 дней:</b></p>
+      <div id="phrases"></div>
+      <p style="font-size:14px;color:var(--muted)">Без вашей кнопки я ничего не меняю. Таблица со всеми запросами — во вложении.</p>
+      <div class="t">09:00</div></div>
+    <div id="sv-replies"></div>
+  </section>
+
+  <footer>Демо собрала Ада для Nat.ai · так выглядит работа ботов в Telegram</footer>
+</div>
+
+<script>
+  var tabs = document.querySelectorAll('.tabs button');
+  tabs.forEach(function(b){ b.addEventListener('click', function(){
+    tabs.forEach(function(x){ x.classList.toggle('on', x === b); });
+    document.getElementById('otdel').classList.toggle('hidden', b.dataset.tab !== 'otdel');
+    document.getElementById('svodka').classList.toggle('hidden', b.dataset.tab !== 'svodka');
+  }); });
+
+  function now(){ var d = new Date(); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+  function add(box, html, me){
+    var m = document.createElement('div'); m.className = 'msg' + (me ? ' me' : '');
+    m.innerHTML = html + '<div class="t">' + now() + '</div>'; box.appendChild(m);
+    m.scrollIntoView({behavior:'smooth', block:'end'});
+  }
+
+  var answers = {
+    '15': ['Подтверждаю +15%', '<div class="who c3">📣 Реклама</div><p>Готово: ставка на плед +15%. Завтра в сводке покажу, вернулась ли позиция.</p>'],
+    '35': ['Подтверждаю +35%', '<div class="who c3">📣 Реклама</div><p>Готово: ставка +35%.</p>', '<div class="who c4">💰 Финансист</div><p>Принято, решение владельца. Буду следить за прибылью с пледа каждый день и напишу, если уйдём в минус.</p>'],
+    '0':  ['Не трогать ставку', '<div class="who c5">🧭 Начальник отдела</div><p>Ставку не меняем. Вернусь к вопросу после поставки пледа.</p>'],
+    'post': ['Напомни про поставку', '<div class="who c1">📊 Статистика</div><p>Поставлю напоминание на послезавтра, 10:00: «Плед флисовый серый — заказать поставку». Тогда останется 4 дня запаса.</p>']
+  };
+  var rep = document.getElementById('replies');
+  document.querySelectorAll('#decide button').forEach(function(b){ b.addEventListener('click', function(){
+    var a = answers[b.dataset.v];
+    b.disabled = true;
+    add(rep, '<p>' + a[0] + '</p>', true);
+    setTimeout(function(){ add(rep, a[1]); }, 700);
+    if (a[2]) setTimeout(function(){ add(rep, a[2]); }, 1500);
+    if (b.dataset.v === '15' || b.dataset.v === '35' || b.dataset.v === '0')
+      document.querySelectorAll('#decide button[data-v="15"],#decide button[data-v="35"],#decide button[data-v="0"]').forEach(function(x){ x.disabled = true; });
+  }); });
+
+  var phrases = [['плед детский', '480 ₽', '41 клик'], ['покрывало на диван', '390 ₽', '33 клика'], ['плед с рукавами', '250 ₽', '30 кликов']];
+  var ph = document.getElementById('phrases'), sv = document.getElementById('sv-replies');
+  phrases.forEach(function(p){
+    var d = document.createElement('div');
+    d.innerHTML = '<p>«' + p[0] + '» — ' + p[1] + ', ' + p[2] + ', 0 заказов</p><div class="kb two"><button>🚫 Применить</button><button>👌 Оставить</button></div>';
+    ph.appendChild(d);
+    var bs = d.querySelectorAll('button');
+    bs[0].addEventListener('click', function(){ bs[0].disabled = bs[1].disabled = true; add(sv, '<div class="who c3">🤖 Агент кабинета</div><p>«' + p[0] + '» добавлена в минус-фразы. Откатить: /undo</p>'); });
+    bs[1].addEventListener('click', function(){ bs[0].disabled = bs[1].disabled = true; add(sv, '<div class="who c3">🤖 Агент кабинета</div><p>Оставила «' + p[0] + '». Через неделю покажу снова, если заказов так и не будет.</p>'); });
+  });
+</script>
+</body>
+</html>
