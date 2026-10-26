@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ИИ-отдел WB · 1 500 товаров</title>
+<style>
+  :root{
+    --bg:#e7ebf0; --chat:#cfd9e3; --in:#ffffff; --out:#e1f7d0; --ink:#1f2328; --muted:#6b7480;
+    --head:#ffffff; --line:#dde3ea; --btn:#eef3f8; --btn-ink:#2a77c0; --warn:#fff4e0; --warn-ink:#a3610b;
+    --tab:#ffffff; --tab-on:#2a77c0; --file:#e8f1fb;
+    --f1:#2a77c0; --f2:#3a9b5c; --f3:#d9822b; --f4:#c0392b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1621; --chat:#0e1621; --in:#182533; --out:#2b5278; --ink:#e9eef3; --muted:#8a99a8;
+      --head:#17212b; --line:#22303e; --btn:#1f3043; --btn-ink:#6ab3f3; --warn:#3a2c14; --warn-ink:#f0b860;
+      --tab:#17212b; --tab-on:#6ab3f3; --file:#1f3043;
+      --f1:#4f95d6; --f2:#4cb377; --f3:#e39a4c; --f4:#e0605a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1621; --chat:#0e1621; --in:#182533; --out:#2b5278; --ink:#e9eef3; --muted:#8a99a8;
+    --head:#17212b; --line:#22303e; --btn:#1f3043; --btn-ink:#6ab3f3; --warn:#3a2c14; --warn-ink:#f0b860;
+    --tab:#17212b; --tab-on:#6ab3f3; --file:#1f3043;
+    --f1:#4f95d6; --f2:#4cb377; --f3:#e39a4c; --f4:#e0605a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:560px;margin:0 auto;min-height:100vh;background:var(--chat);display:flex;flex-direction:column}
+  .note{background:var(--warn);color:var(--warn-ink);font-size:13px;padding:8px 16px;text-align:center}
+  header{background:var(--head);padding:10px 16px;border-bottom:1px solid var(--line)}
+  header b{display:block;font-size:17px}
+  header span{font-size:13px;color:var(--muted)}
+  .tabs{display:flex;background:var(--tab);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+  .tabs button{flex:1;border:0;background:none;color:var(--muted);font:600 14px/1.2 inherit;font-family:inherit;padding:12px 4px;border-bottom:2px solid transparent;cursor:pointer}
+  .tabs button.on{color:var(--tab-on);border-color:var(--tab-on)}
+  .feed{padding:12px 10px 40px;display:flex;flex-direction:column;gap:8px}
+  .day{align-self:center;font-size:12px;color:var(--muted);background:var(--head);padding:3px 10px;border-radius:999px;margin:4px 0}
+  .msg{max-width:90%;background:var(--in);border-radius:14px 14px 14px 4px;padding:8px 11px 6px;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+  .msg.me{align-self:flex-end;background:var(--out);border-radius:14px 14px 4px 14px}
+  .who{font-weight:700;font-size:14px;margin-bottom:2px}
+  .t{font-size:11px;color:var(--muted);text-align:right;margin-top:2px}
+  .msg p{margin:0 0 6px}
+  .msg ul,.msg ol{margin:0 0 6px;padding-left:20px}
+  .more{color:var(--muted);font-size:14px}
+  .file{display:flex;gap:10px;align-items:center;background:var(--file);border-radius:10px;padding:8px 10px;margin:4px 0 6px}
+  .file i{font-style:normal;font-size:26px}
+  .file b{display:block;font-size:14px}
+  .file span{font-size:12px;color:var(--muted)}
+  .alert{background:var(--warn);color:var(--warn-ink);border-radius:8px;padding:6px 8px;margin:4px 0 6px;font-size:15px}
+  .kb{display:grid;gap:6px;margin-top:6px}
+  .kb.two{grid-template-columns:1fr 1fr}
+  .kb button{border:0;border-radius:8px;background:var(--btn);color:var(--btn-ink);font:600 14px/1.2 inherit;font-family:inherit;padding:9px 6px;cursor:pointer}
+  .kb button:disabled{opacity:.55;cursor:default}
+  .hidden{display:none}
+  .c1{color:#d9822b}.c2{color:#3a9b5c}.c3{color:var(--btn-ink)}.c4{color:#9b59b6}.c5{color:#c0392b}
+  /* воронка */
+  .panel{background:var(--in);border-radius:14px;padding:14px;margin:0 0 4px}
+  .panel h3{margin:0 0 4px;font-size:17px}
+  .panel p{margin:0 0 10px;font-size:15px;color:var(--muted)}
+  .fun{display:flex;flex-direction:column;gap:8px;margin:6px 0 4px}
+  .row{display:flex;align-items:center;gap:10px}
+  .bar{height:34px;border-radius:8px;display:flex;align-items:center;padding:0 10px;color:#fff;font-weight:700;font-size:15px;white-space:nowrap;min-width:64px}
+  .lab{font-size:14px;line-height:1.3;min-width:0}
+  .rule{border-left:3px solid var(--btn-ink);padding:2px 0 2px 10px;margin:0 0 10px;font-size:15px}
+  .rule b{display:block}
+  footer{font-size:12px;color:var(--muted);text-align:center;padding:0 16px 24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="note">Пример. Магазин выдуманный, все цифры условные</div>
+  <header><b>ИИ-отдел · магазин «Тёплый дом+»</b><span>1 500 артикулов · 5 ботов и владелец</span></header>
+  <div class="tabs">
+    <button class="on" data-tab="kak">Как устроено</button>
+    <button data-tab="otdel">ИИ-отдел</button>
+    <button data-tab="svodka">Сводка</button>
+  </div>
+
+  <!-- КАК УСТРОЕНО -->
+  <section class="feed" id="kak">
+    <div class="panel">
+      <h3>Главное правило большого магазина</h3>
+      <p>Про каждый из 1 500 товаров в чат писать нельзя: Telegram обрежет сообщение, а ты бросишь читать на третий день. Боты <b>отсеивают</b> и приносят только то, где нужно твоё решение.</p>
+      <div class="fun">
+        <div class="row"><div class="bar" style="width:100%;background:var(--f1)">1 500</div></div>
+        <div class="lab">все артикулы — боты проверяют каждый, каждое утро</div>
+        <div class="row"><div class="bar" style="width:41%;background:var(--f1)">612</div></div>
+        <div class="lab">продавались вчера, остальные 888 молчат</div>
+        <div class="row"><div class="bar" style="width:22%;background:var(--f2)">184</div></div>
+        <div class="lab">группа A — дают 80% выручки, за ними следят пристально</div>
+        <div class="row"><div class="bar" style="width:11%;background:var(--f3)">41</div></div>
+        <div class="lab">требуют внимания: кончаются, упали, конкурент подвинул цену</div>
+        <div class="row"><div class="bar" style="width:5%;background:var(--f4)">3</div></div>
+        <div class="lab">решения, которые принимаешь ты</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Как меняется работа ботов</h3>
+      <div class="rule"><b>📊 Статистика</b>Не список товаров, а итог плюс топ-5 падений. Остальное — в Excel.</div>
+      <div class="rule"><b>🔎 Конкурентка</b>Следит не за всеми, а за топ-50 из группы A, иначе не хватит лимитов WB.</div>
+      <div class="rule"><b>📣 Реклама</b>200+ кампаний. Кнопки не на каждый запрос, а пачкой: «применить все 58» или «показать по одному».</div>
+      <div class="rule"><b>💰 Финансист</b>Ищет товары, которые продаются в минус. На 1 500 артикулов их всегда десятки.</div>
+      <div class="rule"><b>🧭 Начальник</b>Сводит всё в 2–3 решения в день, чтобы ты не тонула в мелочах.</div>
+    </div>
+
+    <div class="panel">
+      <h3>Что честно стоит знать</h3>
+      <div class="rule"><b>⏳ Утренний сбор дольше</b>WB отдаёт данные порциями с паузами. На 1 500 товаров и 200 кампаний сбор займёт, по моей оценке, 20–40 минут, поэтому старт ночью.</div>
+      <div class="rule"><b>💸 API Claude дороже</b>Ботам нужно читать больше данных. 15–30 $ из гайда — это для небольшого магазина, здесь будет больше. Сколько точно, покажет первый месяц.</div>
+      <div class="rule"><b>📑 Без таблицы никак</b>В чате только выжимка. Вся детализация по каждому артикулу — в Excel или Google Таблице.</div>
+    </div>
+  </section>
+
+  <!-- ИИ-ОТДЕЛ -->
+  <section class="feed hidden" id="otdel">
+    <div class="day">Сегодня</div>
+
+    <div class="msg"><div class="who c1">📊 Статистика</div>
+      <p>Вчера <b>1 240 заказов</b> на 2 310 000 ₽. Среднее за 7 дней — 1 310, это −5%, в пределах нормы.</p>
+      <p>Продавались <b>612</b> артикулов из 1 500. Сильнее всего упали:</p>
+      <ol>
+        <li>Плед флисовый серый — −64%</li>
+        <li>Подушка 50×70 — −48%</li>
+        <li>Комплект «Евро» сатин — −41%</li>
+        <li>Плед с рукавами — −39%</li>
+        <li>Наволочки 2 шт — −35%</li>
+      </ol>
+      <p class="more">Ещё 6 товаров упали больше чем на 30%: в таблице.</p>
+      <p><b>Закончатся за 7 дней:</b> 23 артикула из групп A и B.</p>
+      <div class="file"><i>📊</i><div><b>Продажи_и_остатки_23.10.xlsx</b><span>1 500 строк · листы: продажи, падения, остатки</span></div></div>
+      <div class="t">06:40</div></div>
+
+    <div class="msg"><div class="who c2">🔎 Конкурентка</div>
+      <p>Проверила топ-50 группы A. У <b>7</b> наших товаров конкурент снизил цену больше чем на 5%. Сильнее всего это задело:</p>
+      <ul>
+        <li>плед флисовый: у конкурента 1 190 ₽, у нас 1 290 ₽;</li>
+        <li>подушка 50×70: у конкурента 790 ₽, у нас 890 ₽.</li>
+      </ul>
+      <p class="more">Остальные 5 — в таблице, лист «Конкуренты».</p>
+      <div class="t">06:55</div></div>
+
+    <div class="msg"><div class="who c3">📣 Реклама</div>
+      <p>Кампаний: <b>214</b>. Вчера расход 96 400 ₽, ДРР 4,2% при цели 6%.</p>
+      <p>За 14 дней <b>58 запросов</b> потратили 18 400 ₽ и не дали ни одного заказа. Самые дорогие: «плед детский» 1 260 ₽, «покрывало на диван» 980 ₽, «подушка ортопедическая» 870 ₽.</p>
+      <div class="kb two" id="minus">
+        <button data-v="all">🚫 Применить все 58</button>
+        <button data-v="one">👀 Показать по одному</button>
+      </div>
+      <p style="margin-top:8px">По 12 кампаниям ставки поменяла сама, в коридоре до 20%. Список — в таблице.</p>
+      <div class="t">07:10</div></div>
+
+    <div class="msg"><div class="who c4">💰 Финансист</div>
+      <p><b>112 артикулов</b> за 14 дней продавались в минус с учётом рекламы, логистики и невыкупов. Вместе это <b>−41 200 ₽</b>.</p>
+      <p>Почти половина минуса — от 9 товаров с дорогой рекламой. Предлагаю выключить рекламу на них: так мы сэкономим ~19 000 ₽ за 2 недели.</p>
+      <div class="alert">⚠️ Выключение кампаний — только с подтверждения владельца</div>
+      <div class="file"><i>📊</i><div><b>Минусовые_артикулы.xlsx</b><span>112 строк · прибыль на штуку, что съедает деньги</span></div></div>
+      <div class="t">07:30</div></div>
+
+    <div class="msg"><div class="who c3">📣 Реклама</div>
+      <p>По 7 из 9 согласна. Два — новинки, они в рекламе меньше 3 недель, выводы по ним делать рано. Предлагаю выключить 7.</p>
+      <div class="t">07:31</div></div>
+
+    <div class="msg"><div class="who c5">🧭 Начальник отдела</div>
+      <p><b>Нужно ваше решение, 3 вопроса:</b></p>
+      <ol>
+        <li>Поставка: 23 артикула закончатся за неделю. Список готов.</li>
+        <li>Реклама на 7 минусовых товаров: выключить?</li>
+        <li>Цена на плед и подушку: конкурент дешевле на 100 ₽.</li>
+      </ol>
+      <p><b>В порядке:</b> заказы в норме, ДРР ниже цели, по остальным товарам тревог нет.</p>
+      <div class="kb" id="decide">
+        <button data-v="post">📦 Пришли список на поставку</button>
+        <button data-v="off">✅ Выключить рекламу на 7</button>
+        <button data-v="price">💬 По цене обсудим вечером</button>
+      </div>
+      <div class="t">08:00</div></div>
+
+    <div id="replies"></div>
+  </section>
+
+  <!-- СВОДКА -->
+  <section class="feed hidden" id="svodka">
+    <div class="day">Сегодня</div>
+    <div class="msg"><div class="who c3">🤖 Агент кабинета</div>
+      <p><b>Реклама за вчера · 214 кампаний</b></p>
+      <ul>
+        <li>Расход: 96 400 ₽</li>
+        <li>Заказы с рекламы: 690</li>
+        <li>ДРР: 4,2% (цель 6%) ✅</li>
+      </ul>
+      <p><b>Кампании, на которые смотреть:</b></p>
+      <ul>
+        <li>3 кампании встали: кончился бюджет</li>
+        <li>5 кампаний с ДРР выше 15%</li>
+        <li>2 кампании крутят рекламу на товар, которого нет в нужных размерах</li>
+      </ul>
+      <p><b>Съели деньги без заказов, 14 дней:</b> 58 запросов на 18 400 ₽.</p>
+      <div class="kb two" id="sv">
+        <button data-v="all">🚫 Применить все 58</button>
+        <button data-v="top">Только топ-10</button>
+      </div>
+      <div class="file"><i>📊</i><div><b>Кластеры_WB_23.10.xlsx</b><span>4 300 запросов · лист на каждую кампанию</span></div></div>
+      <p class="more">Без вашей кнопки я ничего не меняю. Откатить: /undo</p>
+      <div class="t">06:30</div></div>
+    <div class="msg"><div class="who c3">🤖 Агент кабинета</div>
+      <p>⚠️ Кампания «Пледы — поиск» встала, бюджет 0 ₽. Вчера она дала 84 заказа.</p>
+      <div class="kb two" id="topup">
+        <button data-v="1000">Пополнить 1 000 ₽</button>
+        <button data-v="2000">Пополнить 2 000 ₽</button>
+      </div>
+      <div class="t">06:31</div></div>
+    <div id="sv-replies"></div>
+  </section>
+
+  <footer>Демо собрала Ада для Nat.ai · так выглядит большой магазин в Telegram</footer>
+</div>
+
+<script>
+  var tabs = document.querySelectorAll('.tabs button');
+  tabs.forEach(function(b){ b.addEventListener('click', function(){
+    tabs.forEach(function(x){ x.classList.toggle('on', x === b); });
+    ['kak','otdel','svodka'].forEach(function(id){ document.getElementById(id).classList.toggle('hidden', b.dataset.tab !== id); });
+    window.scrollTo(0, 0);
+  }); });
+
+  function now(){ var d = new Date(); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+  function add(box, html, me){
+    var m = document.createElement('div'); m.className = 'msg' + (me ? ' me' : '');
+    m.innerHTML = html + '<div class="t">' + now() + '</div>'; box.appendChild(m);
+    m.scrollIntoView({behavior:'smooth', block:'end'});
+  }
+  function wire(sel, box, map, once){
+    var bs = document.querySelectorAll(sel + ' button');
+    bs.forEach(function(b){ b.addEventListener('click', function(){
+      var a = map[b.dataset.v];
+      if (once) bs.forEach(function(x){ x.disabled = true; }); else b.disabled = true;
+      add(box, '<p>' + a[0] + '</p>', true);
+      setTimeout(function(){ add(box, a[1]); }, 700);
+    }); });
+  }
+  var rep = document.getElementById('replies'), sv = document.getElementById('sv-replies');
+  wire('#minus', rep, {
+    all: ['Применить все 58', '<div class="who c3">📣 Реклама</div><p>Готово: 58 запросов в минус-фразах. Экономия ~1 300 ₽ в день. Откатить: /undo</p>'],
+    one: ['Показать по одному', '<div class="who c3">📣 Реклама</div><p>Буду присылать по 10 штук с кнопками. Первая десятка — следующим сообщением.</p>']
+  }, true);
+  wire('#decide', rep, {
+    post: ['Пришли список на поставку', '<div class="who c1">📊 Статистика</div><p>Список готов: 23 артикула, сколько везти и на какой склад.</p><div class="file"><i>📦</i><div><b>Поставка_23.10.xlsx</b><span>23 строки</span></div></div>'],
+    off: ['Подтверждаю: выключить рекламу на 7', '<div class="who c3">📣 Реклама</div><p>Выключила 7 кампаний. Через неделю Финансист покажет, сколько сэкономили и не упали ли заказы.</p>'],
+    price: ['По цене обсудим вечером', '<div class="who c5">🧭 Начальник отдела</div><p>Хорошо, напомню в 19:00 и принесу расчёт: прибыль на штуку при 1 190 и 1 290 ₽.</p>']
+  }, false);
+  wire('#sv', sv, {
+    all: ['Применить все 58', '<div class="who c3">🤖 Агент кабинета</div><p>58 запросов добавлены в минус-фразы. Откатить: /undo</p>'],
+    top: ['Только топ-10', '<div class="who c3">🤖 Агент кабинета</div><p>Добавила 10 самых дорогих, это 9 100 ₽ из 18 400. Остальные 48 покажу завтра.</p>']
+  }, true);
+  wire('#topup', sv, {
+    '1000': ['Пополнить 1 000 ₽', '<div class="who c3">🤖 Агент кабинета</div><p>Пополнила на 1 000 ₽, кампания снова работает. Лимит на сегодня: ещё 4 000 ₽.</p>'],
+    '2000': ['Пополнить 2 000 ₽', '<div class="who c3">🤖 Агент кабинета</div><p>Пополнила на 2 000 ₽, кампания снова работает. Лимит на сегодня: ещё 3 000 ₽.</p>']
+  }, true);
+</script>
+</body>
+</html>
