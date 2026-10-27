@@ -88,7 +88,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div id="mapR"></div>
   <div class="up"><label class="btn2">📄 Себестоимость<input type="file" id="fC" accept=".xlsx,.xls,.csv" hidden></label><span id="nC" class="hint">артикул и закупка за 1 шт</span><button class="x" data-x="C" hidden>✕ убрать</button></div>
   <div id="mapC"></div>
-  <details><summary class="hint">…или вставить себестоимость текстом</summary><textarea id="cText" rows="4" placeholder="Худи-01; 450"></textarea></details>
+  <details><summary class="hint">…или вставить себестоимость текстом</summary><textarea id="cText" rows="4" placeholder="Худи-01; 450"></textarea><button class="x" id="clrCost">✕ Очистить</button></details>
   <div id="rSum"></div><div id="rOut"></div><p class="hint" id="rMore"></p>
  </div>
  <p class="hint">Цифры — ориентир. Тарифы WB меняются: точные — в WB Партнёры → Тарифы и в еженедельном отчёте. СПП — скидка WB за свой счёт, её не вычитайте.</p>
@@ -117,6 +117,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 Худи-01; XL; 20; 0; 0
 Футболка-07; M; 8; 30; 20
 Футболка-07; L; 60; 35; 0</textarea>
+  <button class="x" id="clrText">✕ Очистить</button>
  </details>
  <div class="card"><h2>Что везти</h2>
   <div id="sSum"></div>
@@ -276,6 +277,8 @@ function clearFile(w){FILES[w]=null;document.getElementById('f'+w).value='';docu
  if(w==='R'){['rSum','rOut','rMore'].forEach(id=>document.getElementById(id).innerHTML='');RLAST=[]}CFG[w].after()}
 document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>clearFile(b.dataset.x));
 document.getElementById('resetUE').onclick=()=>{if(!confirm('Вернуть пример и стереть свои цифры?'))return;F.forEach(([id,,,v])=>document.getElementById(id).value=v);taxSel.value='rev6';taxIn.value=6;taxIn.readOnly=true;clearFile('R');clearFile('C');document.getElementById('cText').value='';save();ue()};
+document.getElementById('clrText').onclick=()=>{document.getElementById('sData').value='';sup()};
+document.getElementById('clrCost').onclick=()=>{document.getElementById('cText').value='';rep()};
 document.getElementById('resetSup').onclick=()=>{clearFile('A');clearFile('B');document.getElementById('sData').value='';FILTER='all';sup()};
 document.getElementById('fR').onchange=e=>e.target.files[0]&&loadFile('R',e.target.files[0]);
 document.getElementById('fC').onchange=e=>e.target.files[0]&&loadFile('C',e.target.files[0]);
