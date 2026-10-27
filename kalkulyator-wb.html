@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор селлера WB</title>
+<meta name="description" content="Юнит-экономика и расчёт поставок для продавца Wildberries. Бесплатно, без регистрации.">
+<style>
+:root{--bg:#f6f4fb;--card:#fff;--ink:#1f1a2e;--muted:#6b6580;--line:#e4e0ee;--acc:#4b3f72;--acc2:#7a68b8;--in:#fff8db;--ok:#e6f4ea;--okt:#1e6b3a;--bad:#fbe1e3;--badt:#a1242f;--warn:#ffeccc;--warnt:#8a5300}
+@media (prefers-color-scheme:dark){:root{--bg:#15121d;--card:#1f1a2b;--ink:#ece8f6;--muted:#a49dba;--line:#332c45;--acc:#a593e0;--acc2:#7a68b8;--in:#2c2716;--ok:#173323;--okt:#8fd8a6;--bad:#3d1a1e;--badt:#f2a1a8;--warn:#3a2b12;--warnt:#f0c27a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:24px;margin:4px 0 4px}
+.sub{color:var(--muted);margin:0 0 18px}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{flex:1;padding:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}
+.tab.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.card h2{font-size:16px;margin:0 0 12px;color:var(--acc)}
+.row{display:grid;grid-template-columns:1fr 130px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line)}
+.row:last-child{border-bottom:0}
+.row label{font-size:15px}
+.row small{display:block;color:var(--muted);font-size:12px}
+input,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--in);color:var(--ink);font-size:16px}
+input{text-align:right}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.box{border-radius:12px;padding:12px;background:var(--ok);color:var(--okt)}
+.box.bad{background:var(--bad);color:var(--badt)}
+.box.warn{background:var(--warn);color:var(--warnt)}
+.box b{display:block;font-size:22px;margin-top:2px}
+.box span{font-size:13px}
+.big{grid-column:1/-1}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{white-space:nowrap;padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px}
+.it{padding:10px 0;border-bottom:1px solid var(--line)}.it:last-child{border-bottom:0}.it1{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.it2{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:13px;color:var(--muted)}.it2 b{display:block;color:var(--ink);font-size:15px}.need b{color:var(--acc)}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.t-bad{background:var(--bad);color:var(--badt)}.t-warn{background:var(--warn);color:var(--warnt)}.t-ok{background:var(--ok);color:var(--okt)}.t-mute{background:var(--line);color:var(--muted)}
+.btn{padding:10px 14px;border-radius:10px;border:0;background:var(--acc);color:#fff;font-weight:600;font-size:15px;cursor:pointer}
+.hint{color:var(--muted);font-size:13px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.tblwrap{overflow-x:auto}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
+@media (max-width:480px){.row{grid-template-columns:1fr 110px}.res{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Калькулятор селлера WB</h1>
+<p class="sub">Юнит-экономика и расчёт поставок. Считает прямо в браузере, ничего никуда не отправляет.</p>
+
+<div class="tabs">
+ <button class="tab on" data-t="ue">💰 Юнит-экономика</button>
+ <button class="tab" data-t="sup">📦 Поставки</button>
+</div>
+
+<section id="ue">
+ <div class="card"><h2>Ваши цифры — сейчас там пример</h2>
+  <div id="ueIn"></div>
+ </div>
+ <div class="card"><h2>Итог на 1 проданную штуку</h2>
+  <div class="res" id="ueOut"></div>
+ </div>
+ <div class="card"><h2>Куда уходят деньги</h2>
+  <div class="tblwrap"><table id="ueBreak"></table></div>
+ </div>
+ <p class="hint">Цифры — ориентир. Тарифы WB меняются: точные — в WB Партнёры → Тарифы и в еженедельном отчёте. СПП — скидка WB за свой счёт, её не вычитайте.</p>
+</section>
+
+<section id="sup" hidden>
+ <div class="card"><h2>Настройки</h2>
+  <div class="row"><label>Везём запас на, дней</label><input id="sDays" type="number" value="30"></div>
+  <div class="row"><label>Поставка едет до склада, дней</label><input id="sLead" type="number" value="7"></div>
+ </div>
+ <div class="card"><h2>Остатки и продажи — по каждому размеру</h2>
+  <p class="hint">По строке на размер: артикул; размер; остаток; продажи за 14 дней; в пути. Можно скопировать столбцы из Excel — разделители «;», табуляция или пробелы.</p>
+  <textarea id="sData" rows="8">Худи-01; S; 40; 28; 0
+Худи-01; M; 12; 42; 0
+Худи-01; L; 53; 14; 0
+Худи-01; XL; 20; 0; 0
+Футболка-07; M; 8; 30; 20
+Футболка-07; L; 60; 35; 0</textarea>
+ </div>
+ <div class="card"><h2>Что везти</h2>
+  <div id="sOut"></div>
+  <p class="hint">Считайте по размерам: товара в сумме может хватать, а ходовой размер закончится завтра.</p>
+ </div>
+</section>
+
+<footer>Nat.ai · ИИ для селлеров</footer>
+</div>
+
+<script>
+const F=[
+ ['p','Цена продажи','ваша цена до СПП',1500,'₽'],
+ ['cogs','Себестоимость за 1 шт','закупка',450,'₽'],
+ ['pack','Упаковка и маркировка','пакет, стикеры, «Честный знак»',30,'₽'],
+ ['del','Доставка до склада за 1 шт','партия ÷ штук',25,'₽'],
+ ['com','Комиссия WB','по вашей категории',24.5,'%'],
+ ['log','Логистика до покупателя','за 1 шт',80,'₽'],
+ ['back','Обратная логистика','при невыкупе, за 1 шт',50,'₽'],
+ ['vyk','Процент выкупа','одежда 30–70%, остальное 85–95%',75,'%'],
+ ['stor','Хранение за 1 шт','за месяц ÷ продажи',10,'₽'],
+ ['ads','Реклама (ДРР)','расход ÷ выручка',10,'%'],
+ ['tax','Налог','УСН «доходы» — 6%',6,'%'],
+ ['marg','Желаемая маржа','для рекомендуемой цены',20,'%'],
+ ['disc','Скидка в акции','проверить, не уйдёте ли в минус',20,'%'],
+];
+const ueIn=document.getElementById('ueIn');
+F.forEach(([id,n,h,v,u])=>{ueIn.insertAdjacentHTML('beforeend',`<div class="row"><label>${n}, ${u}<small>${h}</small></label><input id="${id}" type="number" step="any" inputmode="decimal" value="${v}"></div>`)});
+const rub=x=>isFinite(x)?Math.round(x).toLocaleString('ru-RU')+' ₽':'—';
+const pct=x=>isFinite(x)?(x*100).toFixed(1).replace('.',',')+'%':'—';
+function ue(){
+ const g=id=>parseFloat(document.getElementById(id).value)||0;
+ const p=g('p'),cogs=g('cogs'),pack=g('pack'),del=g('del'),com=g('com')/100,log=g('log'),back=g('back'),stor=g('stor'),ads=g('ads')/100,tax=g('tax')/100,marg=g('marg')/100,disc=g('disc')/100;
+ const vyk=Math.min(Math.max(g('vyk')/100,0.01),1);
+ const logF=log+(1-vyk)/vyk*(log+back);
+ const fixed=cogs+pack+del+stor+logF, k=com+ads+tax;
+ const items=[['Себестоимость, упаковка, доставка',cogs+pack+del],['Комиссия WB',p*com],['Логистика с учётом невыкупа',logF],['Реклама',p*ads],['Налог',p*tax],['Хранение',stor]];
+ const tot=items.reduce((s,x)=>s+x[1],0), prof=p-tot;
+ const pmin=k<1?fixed/(1-k):NaN, prec=(k+marg)<1?fixed/(1-k-marg):NaN;
+ const pd=p*(1-disc), profD=pd-pd*k-fixed;
+ const roi=prof/(cogs+pack+del);
+ let verdict, vc='';
+ if(profD<0){verdict='В минус — не участвовать';vc='bad'} else if(profD<prof*0.5){verdict='Прибыль падает больше чем вдвое';vc='warn'} else verdict='Можно участвовать';
+ document.getElementById('ueOut').innerHTML=
+ `<div class="box big ${prof<0?'bad':''}"><span>Прибыль с 1 штуки</span><b>${rub(prof)}</b><span>маржа ${pct(prof/p)} · ROI ${pct(roi)}</span></div>
+  <div class="box warn"><span>Минимальная цена (ноль прибыли)</span><b>${rub(pmin)}</b></div>
+  <div class="box"><span>Цена под маржу ${pct(marg)}</span><b>${isFinite(prec)?rub(prec):'недостижима'}</b></div>
+  <div class="box big ${vc}"><span>Скидка ${pct(disc)}: цена ${rub(pd)}, прибыль с 1 шт</span><b>${rub(profD)}</b><span>${verdict}</span></div>`;
+ document.getElementById('ueBreak').innerHTML='<tr><th>Статья</th><th>₽</th><th>% цены</th></tr>'+items.sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<tr><td>${n}</td><td>${rub(v)}</td><td>${pct(v/p)}</td></tr>`).join('')+`<tr><td><b>Всего расходов</b></td><td><b>${rub(tot)}</b></td><td><b>${pct(tot/p)}</b></td></tr>`;
+}
+function sup(){
+ const D=parseFloat(document.getElementById('sDays').value)||0, L=parseFloat(document.getElementById('sLead').value)||0;
+ const rows=document.getElementById('sData').value.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>{
+  let a=s.includes(';')?s.split(';'):s.includes('\t')?s.split('\t'):s.split(/\s+/);a=a.map(x=>x.trim());
+  const [art,size,ost,sales,way]=a; const o=+(ost||0).toString().replace(',','.'),sl=+(sales||0).toString().replace(',','.'),w=+(way||0).toString().replace(',','.');
+  const perDay=sl/14, days=perDay>0?(o+w)/perDay:Infinity, need=perDay>0?Math.max(0,Math.ceil(perDay*(D+L)-o-w)):0;
+  let st,c,ord; if(perDay===0){st='Залежался';c='t-mute';ord=3}else if(days<=L){st='СРОЧНО';c='t-bad';ord=0}else if(days<=14){st='Скоро';c='t-warn';ord=1}else{st='Хватает';c='t-ok';ord=2}
+  return {art,size,o,perDay,days,need,st,c,ord,ok:!isNaN(o)&&!isNaN(sl)};
+ }).filter(r=>r.ok).sort((a,b)=>a.ord-b.ord||a.days-b.days);
+ document.getElementById('sOut').innerHTML=rows.map(r=>`<div class="it"><div class="it1"><span><b>${r.art}</b> · ${r.size||''}</span><span class="tag ${r.c}">${r.st}</span></div><div class="it2"><span>Остаток <b>${r.o}</b></span><span>В день <b>${r.perDay.toFixed(1).replace('.',',')}</b></span><span>Хватит <b>${isFinite(r.days)?Math.floor(r.days)+' дн':'—'}</b></span><span class="need">Везти <b>${r.need} шт</b></span></div></div>`).join('');
+}
+document.querySelectorAll('input,textarea').forEach(e=>e.addEventListener('input',()=>{ue();sup()}));
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));['ue','sup'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.t)});
+ue();sup();
+</script>
+</body>
+</html>
