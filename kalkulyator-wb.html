@@ -36,6 +36,15 @@ th,td{white-space:nowrap;padding:7px 6px;border-bottom:1px solid var(--line);tex
 th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
 th{color:var(--muted);font-weight:600;font-size:12px}
 .it{padding:10px 0;border-bottom:1px solid var(--line)}.it:last-child{border-bottom:0}.it1{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.it2{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:13px;color:var(--muted)}.it2 b{display:block;color:var(--ink);font-size:15px}.need b{color:var(--acc)}
+.up{display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap}
+.btn2{display:inline-block;padding:10px 14px;border-radius:10px;background:var(--acc);color:#fff;font-weight:600;font-size:15px;cursor:pointer}
+.map{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 12px;font-size:13px}
+.map label{display:flex;flex-direction:column;gap:3px;color:var(--muted)}
+select{padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--in);color:var(--ink);font-size:14px;max-width:100%}
+details summary{cursor:pointer}
+.sum{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.sum button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+.sum button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600}
 .t-bad{background:var(--bad);color:var(--badt)}.t-warn{background:var(--warn);color:var(--warnt)}.t-ok{background:var(--ok);color:var(--okt)}.t-mute{background:var(--line);color:var(--muted)}
 .btn{padding:10px 14px;border-radius:10px;border:0;background:var(--acc);color:#fff;font-weight:600;font-size:15px;cursor:pointer}
@@ -73,18 +82,29 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
  <div class="card"><h2>Настройки</h2>
   <div class="row"><label>Везём запас на, дней</label><input id="sDays" type="number" value="30"></div>
   <div class="row"><label>Поставка едет до склада, дней</label><input id="sLead" type="number" value="7"></div>
+  <div class="row"><label>Продажи в файле — за сколько дней<small>какой период выгрузили</small></label><input id="sPer" type="number" value="14"></div>
  </div>
- <div class="card"><h2>Остатки и продажи — по каждому размеру</h2>
-  <p class="hint">По строке на размер: артикул; размер; остаток; продажи за 14 дней; в пути. Можно скопировать столбцы из Excel — разделители «;», табуляция или пробелы.</p>
-  <textarea id="sData" rows="8">Худи-01; S; 40; 28; 0
+ <div class="card"><h2>Загрузить файлы из кабинета WB</h2>
+  <p class="hint">Excel или CSV. Подойдут выгрузки «Остатки по складам» и отчёт о продажах/заказах за период. Если остатки и продажи в одном файле — загрузите только первый.</p>
+  <div class="up"><label class="btn2">📄 Файл с остатками<input type="file" id="fA" accept=".xlsx,.xls,.csv" hidden></label><span id="nA" class="hint">не выбран</span></div>
+  <div id="mapA"></div>
+  <div class="up"><label class="btn2">📄 Файл с продажами<input type="file" id="fB" accept=".xlsx,.xls,.csv" hidden></label><span id="nB" class="hint">не обязательно</span></div>
+  <div id="mapB"></div>
+  <p class="hint">Файлы не уходят в интернет — всё считается на вашем устройстве.</p>
+ </div>
+ <details class="card"><summary><b>…или ввести вручную</b></summary>
+  <p class="hint">По строке на размер: артикул; размер; остаток; продажи за период; в пути.</p>
+  <textarea id="sData" rows="7">Худи-01; S; 40; 28; 0
 Худи-01; M; 12; 42; 0
 Худи-01; L; 53; 14; 0
 Худи-01; XL; 20; 0; 0
 Футболка-07; M; 8; 30; 20
 Футболка-07; L; 60; 35; 0</textarea>
- </div>
+ </details>
  <div class="card"><h2>Что везти</h2>
+  <div id="sSum"></div>
   <div id="sOut"></div>
+  <p class="hint" id="sMore"></p>
   <p class="hint">Считайте по размерам: товара в сумме может хватать, а ходовой размер закончится завтра.</p>
  </div>
 </section>
@@ -92,6 +112,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 <footer>Nat.ai · ИИ для селлеров</footer>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const F=[
  ['p','Цена продажи','ваша цена до СПП',1500,'₽'],
@@ -132,18 +153,65 @@ function ue(){
   <div class="box big ${vc}"><span>Скидка ${pct(disc)}: цена ${rub(pd)}, прибыль с 1 шт</span><b>${rub(profD)}</b><span>${verdict}</span></div>`;
  document.getElementById('ueBreak').innerHTML='<tr><th>Статья</th><th>₽</th><th>% цены</th></tr>'+items.sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<tr><td>${n}</td><td>${rub(v)}</td><td>${pct(v/p)}</td></tr>`).join('')+`<tr><td><b>Всего расходов</b></td><td><b>${rub(tot)}</b></td><td><b>${pct(tot/p)}</b></td></tr>`;
 }
-function sup(){
- const D=parseFloat(document.getElementById('sDays').value)||0, L=parseFloat(document.getElementById('sLead').value)||0;
- const rows=document.getElementById('sData').value.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>{
-  let a=s.includes(';')?s.split(';'):s.includes('\t')?s.split('\t'):s.split(/\s+/);a=a.map(x=>x.trim());
-  const [art,size,ost,sales,way]=a; const o=+(ost||0).toString().replace(',','.'),sl=+(sales||0).toString().replace(',','.'),w=+(way||0).toString().replace(',','.');
-  const perDay=sl/14, days=perDay>0?(o+w)/perDay:Infinity, need=perDay>0?Math.max(0,Math.ceil(perDay*(D+L)-o-w)):0;
-  let st,c,ord; if(perDay===0){st='Залежался';c='t-mute';ord=3}else if(days<=L){st='СРОЧНО';c='t-bad';ord=0}else if(days<=14){st='Скоро';c='t-warn';ord=1}else{st='Хватает';c='t-ok';ord=2}
-  return {art,size,o,perDay,days,need,st,c,ord,ok:!isNaN(o)&&!isNaN(sl)};
- }).filter(r=>r.ok).sort((a,b)=>a.ord-b.ord||a.days-b.days);
- document.getElementById('sOut').innerHTML=rows.map(r=>`<div class="it"><div class="it1"><span><b>${r.art}</b> · ${r.size||''}</span><span class="tag ${r.c}">${r.st}</span></div><div class="it2"><span>Остаток <b>${r.o}</b></span><span>В день <b>${r.perDay.toFixed(1).replace('.',',')}</b></span><span>Хватит <b>${isFinite(r.days)?Math.floor(r.days)+' дн':'—'}</b></span><span class="need">Везти <b>${r.need} шт</b></span></div></div>`).join('');
+const FILES={A:null,B:null};let FILTER='all',LAST=[];
+const norm=x=>String(x??'').trim().toLowerCase().replace(/ё/g,'е');
+const num=x=>{if(typeof x==='number')return x;const v=parseFloat(String(x??'').replace(/\s/g,'').replace(',','.'));return isNaN(v)?0:v};
+const ROLES={art:['артикул продавца','артикул поставщика','артикул','баркод','nm'],size:['размер'],stock:['итого по складам','остаток','остатки','доступно','количество'],sales:['выкупили','продажи','продано','заказано','заказы','заказали'],way:['в пути на склад','в пути до склад','поставка в пути']};
+const RN={art:'Артикул',size:'Размер',stock:'Остаток',sales:'Продажи за период',way:'В пути на склад'};
+function guess(h,role){const hs=h.map(norm);for(const k of ROLES[role]){const i=hs.findIndex(x=>x.includes(k)&&!(role==='art'&&x.includes('wb')&&k==='артикул'));if(i>=0)return i}return -1}
+function headerRow(rows){let best=0,bs=-1;for(let i=0;i<Math.min(rows.length,20);i++){const sc=rows[i].filter(c=>{const n=norm(c);return Object.values(ROLES).flat().some(k=>n.includes(k))}).length;if(sc>bs){bs=sc;best=i}}return best}
+function loadFile(which,file){
+ document.getElementById('n'+which).textContent='читаю…';
+ const r=new FileReader();r.onload=e=>{try{
+  const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});const hr=headerRow(rows);
+  const head=rows[hr].map(String),data=rows.slice(hr+1).filter(r=>r.some(c=>c!==''));
+  const roles=which==='A'?['art','size','stock','sales','way']:['art','size','sales'];
+  const map={};roles.forEach(k=>map[k]=guess(head,k));
+  if(which==='A'&&map.sales===map.stock)map.sales=-1;
+  FILES[which]={head,data,map,roles};
+  document.getElementById('n'+which).textContent=file.name+' · строк: '+data.length;
+  drawMap(which);sup();
+ }catch(err){document.getElementById('n'+which).textContent='не получилось прочитать файл: '+err.message}};
+ r.readAsArrayBuffer(file);
 }
-document.querySelectorAll('input,textarea').forEach(e=>e.addEventListener('input',()=>{ue();sup()}));
+function drawMap(which){const f=FILES[which];const opt=sel=>'<option value="-1">— нет —</option>'+f.head.map((h,i)=>`<option value="${i}" ${i===sel?'selected':''}>${h||'(столбец '+(i+1)+')'}</option>`).join('');
+ document.getElementById('map'+which).innerHTML='<div class="map">'+f.roles.map(k=>`<label>${RN[k]}<select data-w="${which}" data-k="${k}">${opt(f.map[k])}</select></label>`).join('')+'</div>';
+ document.querySelectorAll('#map'+which+' select').forEach(s=>s.onchange=()=>{FILES[s.dataset.w].map[s.dataset.k]=+s.value;sup()});}
+function fromFiles(){
+ const A=FILES.A;if(!A)return null;const m=A.map,key=(a,s)=>norm(a)+'|'+norm(s);const agg=new Map();
+ for(const r of A.data){const art=m.art>=0?String(r[m.art]).trim():'';if(!art)continue;const size=m.size>=0?String(r[m.size]).trim():'';const k=key(art,size);
+  const o=agg.get(k)||{art,size,o:0,sl:0,w:0};o.o+=m.stock>=0?num(r[m.stock]):0;if(!FILES.B&&m.sales>=0)o.sl+=num(r[m.sales]);o.w+=m.way>=0?num(r[m.way]):0;agg.set(k,o)}
+ const B=FILES.B;if(B){const mb=B.map;for(const r of B.data){const art=mb.art>=0?String(r[mb.art]).trim():'';if(!art)continue;const size=mb.size>=0?String(r[mb.size]).trim():'';const k=key(art,size);
+  const o=agg.get(k)||{art,size,o:0,sl:0,w:0};o.sl+=mb.sales>=0?num(r[mb.sales]):0;agg.set(k,o)}}
+ return [...agg.values()];
+}
+function fromText(){return document.getElementById('sData').value.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>{
+  let a=s.includes(';')?s.split(';'):s.includes('\t')?s.split('\t'):s.split(/\s+/);a=a.map(x=>x.trim());
+  return {art:a[0],size:a[1]||'',o:num(a[2]),sl:num(a[3]),w:num(a[4])}})}
+function sup(){
+ const D=num(document.getElementById('sDays').value),L=num(document.getElementById('sLead').value),P=num(document.getElementById('sPer').value)||14;
+ const src=fromFiles()||fromText();
+ LAST=src.map(({art,size,o,sl,w})=>{const perDay=sl/P,days=perDay>0?(o+w)/perDay:Infinity,need=perDay>0?Math.max(0,Math.ceil(perDay*(D+L)-o-w)):0;
+  let st,c,ord;if(perDay===0){st='Залежался';c='t-mute';ord=3}else if(days<=L){st='СРОЧНО';c='t-bad';ord=0}else if(days<=14){st='Скоро';c='t-warn';ord=1}else{st='Хватает';c='t-ok';ord=2}
+  return {art,size,o,w,sl,perDay,days,need,st,c,ord}}).sort((a,b)=>a.ord-b.ord||a.days-b.days);
+ const cnt=s=>LAST.filter(r=>r.st===s).length,tot=LAST.reduce((x,r)=>x+r.need,0);
+ const btn=(f,t)=>`<button data-f="${f}" class="${FILTER===f?'on':''}">${t}</button>`;
+ document.getElementById('sSum').innerHTML=`<div class="sum">${btn('all','Все · '+LAST.length)}${btn('СРОЧНО','Срочно · '+cnt('СРОЧНО'))}${btn('Скоро','Скоро · '+cnt('Скоро'))}${btn('Хватает','Хватает · '+cnt('Хватает'))}${btn('Залежался','Залежались · '+cnt('Залежался'))}</div><div class="up"><b>Везти всего: ${tot.toLocaleString('ru-RU')} шт</b><button class="btn" id="dl">⬇ Скачать Excel</button></div>`;
+ document.querySelectorAll('#sSum .sum button').forEach(b=>b.onclick=()=>{FILTER=b.dataset.f;sup()});
+ document.getElementById('dl').onclick=dl;
+ const view=LAST.filter(r=>FILTER==='all'||r.st===FILTER),show=view.slice(0,200);
+ document.getElementById('sOut').innerHTML=show.map(r=>`<div class="it"><div class="it1"><span><b>${r.art}</b> · ${r.size||''}</span><span class="tag ${r.c}">${r.st}</span></div><div class="it2"><span>Остаток <b>${r.o}</b></span><span>В день <b>${r.perDay.toFixed(1).replace('.',',')}</b></span><span>Хватит <b>${isFinite(r.days)?Math.floor(r.days)+' дн':'—'}</b></span><span class="need">Везти <b>${r.need} шт</b></span></div></div>`).join('');
+ document.getElementById('sMore').textContent=view.length>200?`Показаны первые 200 из ${view.length}. Полный список — в Excel.`:'';
+}
+function dl(){
+ if(typeof XLSX==='undefined'){alert('Не загрузилась библиотека Excel, проверьте интернет');return}
+ const rows=LAST.map(r=>({'Артикул':r.art,'Размер':r.size,'Остаток':r.o,'В пути':r.w,'Продажи за период':r.sl,'Продаж в день':+r.perDay.toFixed(2),'Хватит, дней':isFinite(r.days)?Math.floor(r.days):'нет продаж','Везти, шт':r.need,'Статус':r.st}));
+ const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Поставка');XLSX.writeFile(wb,'postavka-wb.xlsx');
+}
+document.getElementById('fA').onchange=e=>e.target.files[0]&&loadFile('A',e.target.files[0]);
+document.getElementById('fB').onchange=e=>e.target.files[0]&&loadFile('B',e.target.files[0]);
+document.querySelectorAll('input:not([type=file]),textarea').forEach(e=>e.addEventListener('input',()=>{ue();sup()}));
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));['ue','sup'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.t)});
 ue();sup();
 </script>
