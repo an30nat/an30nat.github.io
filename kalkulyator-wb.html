@@ -67,13 +67,26 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 
 <section id="ue">
  <div class="card"><h2>Ваши цифры — сейчас там пример</h2>
+  <div class="row"><label>Система налогообложения</label><select id="taxSel">
+   <option value="rev6">УСН «доходы» 6%</option><option value="prof15">УСН «доходы − расходы» 15%</option>
+   <option value="rev">Свой % с выручки</option><option value="prof">Свой % с прибыли</option></select></div>
   <div id="ueIn"></div>
+  <p class="hint">Цифры запоминаются в этом браузере — в следующий раз всё будет на месте.</p>
  </div>
  <div class="card"><h2>Итог на 1 проданную штуку</h2>
   <div class="res" id="ueOut"></div>
  </div>
  <div class="card"><h2>Куда уходят деньги</h2>
   <div class="tblwrap"><table id="ueBreak"></table></div>
+ </div>
+ <div class="card"><h2>📊 Все артикулы из отчёта WB</h2>
+  <p class="hint">Загрузите еженедельный отчёт — «Детализацию» из раздела «Финансовые отчёты» (Excel; если скачался ZIP — сначала распакуйте). Калькулятор сам посчитает цену, комиссию, логистику, выкуп, хранение и штрафы по каждому артикулу. Налог и реклама (ДРР) берутся из полей выше.</p>
+  <div class="up"><label class="btn2">📄 Детализация отчёта<input type="file" id="fR" accept=".xlsx,.xls,.csv" hidden></label><span id="nR" class="hint">не выбран</span></div>
+  <div id="mapR"></div>
+  <div class="up"><label class="btn2">📄 Себестоимость<input type="file" id="fC" accept=".xlsx,.xls,.csv" hidden></label><span id="nC" class="hint">артикул и закупка за 1 шт</span></div>
+  <div id="mapC"></div>
+  <details><summary class="hint">…или вставить себестоимость текстом</summary><textarea id="cText" rows="4" placeholder="Худи-01; 450"></textarea></details>
+  <div id="rSum"></div><div id="rOut"></div><p class="hint" id="rMore"></p>
  </div>
  <p class="hint">Цифры — ориентир. Тарифы WB меняются: точные — в WB Партнёры → Тарифы и в еженедельном отчёте. СПП — скидка WB за свой счёт, её не вычитайте.</p>
 </section>
@@ -137,12 +150,16 @@ function ue(){
  const g=id=>parseFloat(document.getElementById(id).value)||0;
  const p=g('p'),cogs=g('cogs'),pack=g('pack'),del=g('del'),com=g('com')/100,log=g('log'),back=g('back'),stor=g('stor'),ads=g('ads')/100,tax=g('tax')/100,marg=g('marg')/100,disc=g('disc')/100;
  const vyk=Math.min(Math.max(g('vyk')/100,0.01),1);
+ const onProfit=taxOnProfit();
  const logF=log+(1-vyk)/vyk*(log+back);
- const fixed=cogs+pack+del+stor+logF, k=com+ads+tax;
- const items=[['Себестоимость, упаковка, доставка',cogs+pack+del],['Комиссия WB',p*com],['Логистика с учётом невыкупа',logF],['Реклама',p*ads],['Налог',p*tax],['Хранение',stor]];
+ const fixed=cogs+pack+del+stor+logF, c=com+ads;
+ const taxOf=P=>onProfit?tax*Math.max(0,P*(1-c)-fixed):tax*P;
+ const profAt=P=>P*(1-c)-fixed-taxOf(P);
+ const items=[['Себестоимость, упаковка, доставка',cogs+pack+del],['Комиссия WB',p*com],['Логистика с учётом невыкупа',logF],['Реклама',p*ads],['Налог',taxOf(p)],['Хранение',stor]];
  const tot=items.reduce((s,x)=>s+x[1],0), prof=p-tot;
- const pmin=k<1?fixed/(1-k):NaN, prec=(k+marg)<1?fixed/(1-k-marg):NaN;
- const pd=p*(1-disc), profD=pd-pd*k-fixed;
+ const pmin=onProfit?(c<1?fixed/(1-c):NaN):(c+tax<1?fixed/(1-c-tax):NaN);
+ const dn=onProfit?(1-c)*(1-tax)-marg:1-c-tax-marg, prec=dn>0?(onProfit?fixed*(1-tax):fixed)/dn:NaN;
+ const pd=p*(1-disc), profD=profAt(pd);
  const roi=prof/(cogs+pack+del);
  let verdict, vc='';
  if(profD<0){verdict='В минус — не участвовать';vc='bad'} else if(profD<prof*0.5){verdict='Прибыль падает больше чем вдвое';vc='warn'} else verdict='Можно участвовать';
@@ -153,31 +170,38 @@ function ue(){
   <div class="box big ${vc}"><span>Скидка ${pct(disc)}: цена ${rub(pd)}, прибыль с 1 шт</span><b>${rub(profD)}</b><span>${verdict}</span></div>`;
  document.getElementById('ueBreak').innerHTML='<tr><th>Статья</th><th>₽</th><th>% цены</th></tr>'+items.sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<tr><td>${n}</td><td>${rub(v)}</td><td>${pct(v/p)}</td></tr>`).join('')+`<tr><td><b>Всего расходов</b></td><td><b>${rub(tot)}</b></td><td><b>${pct(tot/p)}</b></td></tr>`;
 }
-const FILES={A:null,B:null};let FILTER='all',LAST=[];
+const FILES={A:null,B:null,R:null,C:null};let RLAST=[],RFILTER='all';let FILTER='all',LAST=[];
 const norm=x=>String(x??'').trim().toLowerCase().replace(/ё/g,'е');
 const num=x=>{if(typeof x==='number')return x;const v=parseFloat(String(x??'').replace(/\s/g,'').replace(',','.'));return isNaN(v)?0:v};
 const ROLES={art:['артикул продавца','артикул поставщика','артикул','баркод','nm'],size:['размер'],stock:['итого по складам','остаток','остатки','доступно','количество'],sales:['выкупили','продажи','продано','заказано','заказы','заказали'],way:['в пути на склад','в пути до склад','поставка в пути']};
 const RN={art:'Артикул',size:'Размер',stock:'Остаток',sales:'Продажи за период',way:'В пути на склад'};
-function guess(h,role){const hs=h.map(norm);for(const k of ROLES[role]){const i=hs.findIndex(x=>x.includes(k)&&!(role==='art'&&x.includes('wb')&&k==='артикул'));if(i>=0)return i}return -1}
-function headerRow(rows){let best=0,bs=-1;for(let i=0;i<Math.min(rows.length,20);i++){const sc=rows[i].filter(c=>{const n=norm(c);return Object.values(ROLES).flat().some(k=>n.includes(k))}).length;if(sc>bs){bs=sc;best=i}}return best}
+const RROLES={art:['артикул поставщика','артикул продавца'],type:['обоснование для оплаты','тип документа'],qty:['кол-во','количество'],real:['реализовал товар','вайлдберриз реализовал','цена розничная с учетом'],pay:['к перечислению продавцу','к перечислению'],log:['услуги по доставке'],stor:['хранение'],fine:['общая сумма штрафов','штраф'],acc:['платная приемка','приемка'],ded:['удержания','прочие удержания'],deliv:['количество доставок'],ret:['количество возврата']};
+const RRN={art:'Артикул',type:'Обоснование для оплаты',qty:'Кол-во',real:'WB реализовал товар (Пр)',pay:'К перечислению продавцу',log:'Услуги по доставке',stor:'Хранение',fine:'Штрафы',acc:'Платная приёмка',ded:'Удержания',deliv:'Количество доставок',ret:'Количество возврата'};
+const CROLES={art:['артикул','арт'],cost:['себестоимость','закупка','цена закупки','стоимость']};
+const CRN={art:'Артикул',cost:'Себестоимость за 1 шт'};
+const CFG={A:{kw:ROLES,rn:RN,roles:['art','size','stock','sales','way'],after:()=>sup()},B:{kw:ROLES,rn:RN,roles:['art','size','sales'],after:()=>sup()},R:{kw:RROLES,rn:RRN,roles:Object.keys(RROLES),after:()=>rep()},C:{kw:CROLES,rn:CRN,roles:['art','cost'],after:()=>rep()}};
+function guess(h,role,kw=ROLES){const hs=h.map(norm);if(kw===RROLES&&role==='qty'){const i=hs.findIndex(x=>x==='кол-во'||x==='количество');if(i>=0)return i}for(const k of kw[role]){const i=hs.findIndex(x=>x.includes(k)&&!(role==='art'&&x.includes('wb')&&k==='артикул'));if(i>=0)return i}return -1}
+function headerRow(rows,kw=ROLES){let best=0,bs=-1;for(let i=0;i<Math.min(rows.length,20);i++){const sc=rows[i].filter(c=>{const n=norm(c);return Object.values(kw).flat().some(k=>n.includes(k))}).length;if(sc>bs){bs=sc;best=i}}return best}
 function loadFile(which,file){
  document.getElementById('n'+which).textContent='читаю…';
  const r=new FileReader();r.onload=e=>{try{
   const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];
-  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});const hr=headerRow(rows);
+  const cf=CFG[which];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});const hr=headerRow(rows,cf.kw);
   const head=rows[hr].map(String),data=rows.slice(hr+1).filter(r=>r.some(c=>c!==''));
-  const roles=which==='A'?['art','size','stock','sales','way']:['art','size','sales'];
-  const map={};roles.forEach(k=>map[k]=guess(head,k));
+  const roles=cf.roles;
+  const map={};roles.forEach(k=>map[k]=guess(head,k,cf.kw));
   if(which==='A'&&map.sales===map.stock)map.sales=-1;
+  if(which==='R'){if(map.stor===map.fine)map.fine=-1;if(map.ded===map.fine)map.ded=-1}
   FILES[which]={head,data,map,roles};
   document.getElementById('n'+which).textContent=file.name+' · строк: '+data.length;
-  drawMap(which);sup();
+  drawMap(which);cf.after();
  }catch(err){document.getElementById('n'+which).textContent='не получилось прочитать файл: '+err.message}};
  r.readAsArrayBuffer(file);
 }
 function drawMap(which){const f=FILES[which];const opt=sel=>'<option value="-1">— нет —</option>'+f.head.map((h,i)=>`<option value="${i}" ${i===sel?'selected':''}>${h||'(столбец '+(i+1)+')'}</option>`).join('');
- document.getElementById('map'+which).innerHTML='<div class="map">'+f.roles.map(k=>`<label>${RN[k]}<select data-w="${which}" data-k="${k}">${opt(f.map[k])}</select></label>`).join('')+'</div>';
- document.querySelectorAll('#map'+which+' select').forEach(s=>s.onchange=()=>{FILES[s.dataset.w].map[s.dataset.k]=+s.value;sup()});}
+ document.getElementById('map'+which).innerHTML='<div class="map">'+f.roles.map(k=>`<label>${CFG[which].rn[k]}<select data-w="${which}" data-k="${k}">${opt(f.map[k])}</select></label>`).join('')+'</div>';
+ document.querySelectorAll('#map'+which+' select').forEach(s=>s.onchange=()=>{FILES[s.dataset.w].map[s.dataset.k]=+s.value;CFG[s.dataset.w].after()});}
 function fromFiles(){
  const A=FILES.A;if(!A)return null;const m=A.map,key=(a,s)=>norm(a)+'|'+norm(s);const agg=new Map();
  for(const r of A.data){const art=m.art>=0?String(r[m.art]).trim():'';if(!art)continue;const size=m.size>=0?String(r[m.size]).trim():'';const k=key(art,size);
@@ -204,6 +228,36 @@ function sup(){
  document.getElementById('sOut').innerHTML=show.map(r=>`<div class="it"><div class="it1"><span><b>${r.art}</b> · ${r.size||''}</span><span class="tag ${r.c}">${r.st}</span></div><div class="it2"><span>Остаток <b>${r.o}</b></span><span>В день <b>${r.perDay.toFixed(1).replace('.',',')}</b></span><span>Хватит <b>${isFinite(r.days)?Math.floor(r.days)+' дн':'—'}</b></span><span class="need">Везти <b>${r.need} шт</b></span></div></div>`).join('');
  document.getElementById('sMore').textContent=view.length>200?`Показаны первые 200 из ${view.length}. Полный список — в Excel.`:'';
 }
+function costs(){const m=new Map();const C=FILES.C;
+ if(C){for(const r of C.data){const a=C.map.art>=0?norm(r[C.map.art]):'';if(a)m.set(a,num(r[C.map.cost]))}}
+ document.getElementById('cText').value.split('\n').forEach(l=>{const a=l.split(/[;\t]/);if(a.length>=2&&a[0].trim())m.set(norm(a[0]),num(a[1]))});return m}
+function rep(){
+ const R=FILES.R,box=document.getElementById('rOut');if(!R){return}
+ const m=R.map,v=(r,k)=>m[k]>=0?num(r[m[k]]):0,g=id=>num(document.getElementById(id).value);
+ const ads=g('ads')/100,tax=g('tax')/100,onP=taxOnProfit(),cm=costs();
+ const A=new Map();let un={log:0,stor:0,fine:0,acc:0,ded:0};
+ for(const r of R.data){const art=m.art>=0?String(r[m.art]).trim():'';const t=m.type>=0?norm(r[m.type]):'';
+  const isSale=t.includes('продаж'),isRet=t.includes('возврат');const sign=isRet?-1:1;
+  if(!art){un.log+=v(r,'log');un.stor+=v(r,'stor');un.fine+=v(r,'fine');un.acc+=v(r,'acc');un.ded+=v(r,'ded');continue}
+  const k=norm(art);const o=A.get(k)||{art,sold:0,real:0,pay:0,log:0,stor:0,fine:0,acc:0,ded:0,deliv:0,ret:0};
+  if(isSale||isRet){o.sold+=sign*v(r,'qty');o.real+=sign*v(r,'real');o.pay+=sign*v(r,'pay')}
+  o.log+=v(r,'log');o.stor+=v(r,'stor');o.fine+=v(r,'fine');o.acc+=v(r,'acc');o.ded+=v(r,'ded');o.deliv+=v(r,'deliv');o.ret+=v(r,'ret');A.set(k,o)}
+ RLAST=[...A.values()].map(o=>{const cost=cm.has(norm(o.art))?cm.get(norm(o.art)):null;const cogs=cost==null?0:cost*o.sold;const adv=o.real*ads;
+  const pre=o.pay-o.log-o.stor-o.fine-o.acc-o.ded-cogs-adv;const tx=onP?tax*Math.max(0,pre):tax*o.real;const prof=pre-tx;
+  return {...o,cost,cogs,adv,tx,prof,price:o.sold?o.real/o.sold:0,comPct:o.real?(o.real-o.pay)/o.real:0,unit:o.sold?prof/o.sold:0,marg:o.real?prof/o.real:0,vyk:o.deliv?Math.max(0,o.deliv-o.ret)/o.deliv:null}}).sort((a,b)=>a.prof-b.prof);
+ const tot=RLAST.reduce((x,o)=>x+o.prof,0),unT=un.log+un.stor+un.fine+un.acc+un.ded,noCost=RLAST.filter(o=>o.cost==null&&o.sold>0).length,minus=RLAST.filter(o=>o.prof<0).length;
+ const btn=(f,t)=>`<button data-f="${f}" class="${RFILTER===f?'on':''}">${t}</button>`;
+ document.getElementById('rSum').innerHTML=`<div class="res" style="margin:12px 0"><div class="box ${tot-unT<0?'bad':''}"><span>Прибыль за период</span><b>${rub(tot-unT)}</b><span>с учётом расходов без артикула</span></div><div class="box ${minus?'bad':''}"><span>Артикулов в минус</span><b>${minus} из ${RLAST.length}</b></div></div>`+
+  (unT?`<p class="hint">Расходы без артикула (хранение, приёмка, штрафы и удержания общей строкой): <b>${rub(unT)}</b> — учтены в общей прибыли, но не разнесены по товарам.</p>`:'')+
+  (noCost?`<p class="hint" style="color:var(--badt)">У ${noCost} артикулов нет себестоимости — прибыль по ним завышена. Загрузите файл себестоимости.</p>`:'')+
+  `<div class="sum">${btn('all','Все')}${btn('minus','В минус · '+minus)}</div><div class="up"><button class="btn" id="rdl">⬇ Скачать Excel</button></div>`;
+ document.querySelectorAll('#rSum .sum button').forEach(b=>b.onclick=()=>{RFILTER=b.dataset.f;rep()});document.getElementById('rdl').onclick=rdl;
+ const view=RLAST.filter(o=>RFILTER==='all'||o.prof<0),show=view.slice(0,200);
+ box.innerHTML=show.map(o=>`<div class="it"><div class="it1"><span><b>${o.art}</b> · продано ${o.sold} шт</span><span class="tag ${o.prof<0?'t-bad':'t-ok'}">${rub(o.prof)}</span></div><div class="it2"><span>Цена <b>${rub(o.price)}</b></span><span>Комиссия <b>${pct(o.comPct)}</b></span><span>С 1 шт <b>${rub(o.unit)}</b></span><span class="need">Маржа <b>${pct(o.marg)}</b></span></div></div>`).join('');
+ document.getElementById('rMore').textContent=view.length>200?`Показаны первые 200 из ${view.length}. Полный список — в Excel.`:'';
+}
+function rdl(){const rows=RLAST.map(o=>({'Артикул':o.art,'Продано, шт':o.sold,'Средняя цена':Math.round(o.price),'WB реализовал':Math.round(o.real),'К перечислению':Math.round(o.pay),'Комиссия, %':+(o.comPct*100).toFixed(1),'Логистика':Math.round(o.log),'Хранение':Math.round(o.stor),'Штрафы':Math.round(o.fine),'Приёмка':Math.round(o.acc),'Удержания':Math.round(o.ded),'Себестоимость':o.cost==null?'нет данных':Math.round(o.cogs),'Реклама (ДРР)':Math.round(o.adv),'Налог':Math.round(o.tx),'Прибыль':Math.round(o.prof),'Прибыль с 1 шт':Math.round(o.unit),'Маржа, %':+(o.marg*100).toFixed(1),'Выкуп, %':o.vyk==null?'':+(o.vyk*100).toFixed(0)}));
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Юнит-экономика');XLSX.writeFile(wb,'unit-ekonomika-wb.xlsx')}
 function dl(){
  if(typeof XLSX==='undefined'){alert('Не загрузилась библиотека Excel, проверьте интернет');return}
  const rows=LAST.map(r=>({'Артикул':r.art,'Размер':r.size,'Остаток':r.o,'В пути':r.w,'Продажи за период':r.sl,'Продаж в день':+r.perDay.toFixed(2),'Хватит, дней':isFinite(r.days)?Math.floor(r.days):'нет продаж','Везти, шт':r.need,'Статус':r.st}));
@@ -211,8 +265,19 @@ function dl(){
 }
 document.getElementById('fA').onchange=e=>e.target.files[0]&&loadFile('A',e.target.files[0]);
 document.getElementById('fB').onchange=e=>e.target.files[0]&&loadFile('B',e.target.files[0]);
-document.querySelectorAll('input:not([type=file]),textarea').forEach(e=>e.addEventListener('input',()=>{ue();sup()}));
+document.getElementById('fR').onchange=e=>e.target.files[0]&&loadFile('R',e.target.files[0]);
+document.getElementById('fC').onchange=e=>e.target.files[0]&&loadFile('C',e.target.files[0]);
+document.getElementById('cText').addEventListener('input',()=>rep());
+document.querySelectorAll('input:not([type=file]),textarea').forEach(e=>e.addEventListener('input',()=>{ue();sup();rep()}));
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));['ue','sup'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.t)});
+function taxOnProfit(){const v=document.getElementById('taxSel').value;return v==='prof15'||v==='prof'}
+const taxSel=document.getElementById('taxSel'),taxIn=document.getElementById('tax');
+taxSel.onchange=()=>{if(taxSel.value==='rev6')taxIn.value=6;if(taxSel.value==='prof15')taxIn.value=15;taxIn.readOnly=taxSel.value.length>4;save();ue();rep()};
+const KEEP=[...F.map(x=>x[0]),'taxSel','sDays','sLead','sPer'];
+function save(){try{localStorage.setItem('wbcalc',JSON.stringify(Object.fromEntries(KEEP.map(id=>[id,document.getElementById(id).value]))))}catch(e){}}
+try{const d=JSON.parse(localStorage.getItem('wbcalc')||'{}');KEEP.forEach(id=>{if(d[id]!=null)document.getElementById(id).value=d[id]})}catch(e){}
+taxIn.readOnly=taxSel.value.length>4;
+document.querySelectorAll('input:not([type=file])').forEach(e=>e.addEventListener('input',save));
 ue();sup();
 </script>
 </body>
