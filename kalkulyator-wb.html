@@ -46,6 +46,7 @@ details summary{cursor:pointer}
 .sum button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
 .sum button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .x{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:14px;cursor:pointer}
+.art{display:block;color:var(--muted);font-size:12px;word-break:break-all}
 .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600}
 .t-bad{background:var(--bad);color:var(--badt)}.t-warn{background:var(--warn);color:var(--warnt)}.t-ok{background:var(--ok);color:var(--okt)}.t-mute{background:var(--line);color:var(--muted)}
 .btn{padding:10px 14px;border-radius:10px;border:0;background:var(--acc);color:#fff;font-weight:600;font-size:15px;cursor:pointer}
@@ -176,28 +177,29 @@ function ue(){
 const FILES={A:null,B:null,R:null,C:null};let RLAST=[],RFILTER='all';let FILTER='all',LAST=[];
 const norm=x=>String(x??'').trim().toLowerCase().replace(/ё/g,'е');
 const num=x=>{if(typeof x==='number')return x;const v=parseFloat(String(x??'').replace(/\s/g,'').replace(',','.'));return isNaN(v)?0:v};
-const ROLES={art:['артикул продавца','артикул поставщика','артикул','баркод','nm'],size:['размер'],stock:['итого по складам','остаток','остатки','доступно','количество'],sales:['выкупили','продажи','продано','заказано','заказы','заказали'],way:['в пути на склад','в пути до склад','поставка в пути']};
-const RN={art:'Артикул',size:'Размер',stock:'Остаток',sales:'Продажи за период',way:'В пути на склад'};
+const ROLES={name:['наименование','название','предмет'],art:['артикул продавца','артикул поставщика','артикул','баркод','nm'],size:['размер'],stock:['итого по складам','остаток','остатки','доступно','количество'],sales:['выкупили','продажи','продано','заказано','заказы','заказали'],way:['в пути на склад','в пути до склад','поставка в пути']};
+const RN={name:'Название товара',art:'Артикул',size:'Размер',stock:'Остаток',sales:'Продажи за период',way:'В пути на склад'};
 const RROLES={art:['артикул поставщика','артикул продавца'],type:['обоснование для оплаты','тип документа'],qty:['кол-во','количество'],real:['реализовал товар','вайлдберриз реализовал','цена розничная с учетом'],pay:['к перечислению продавцу','к перечислению'],log:['услуги по доставке'],stor:['хранение'],fine:['общая сумма штрафов','штраф'],acc:['платная приемка','приемка'],ded:['удержания','прочие удержания'],deliv:['количество доставок'],ret:['количество возврата']};
 const RRN={art:'Артикул',type:'Обоснование для оплаты',qty:'Кол-во',real:'WB реализовал товар (Пр)',pay:'К перечислению продавцу',log:'Услуги по доставке',stor:'Хранение',fine:'Штрафы',acc:'Платная приёмка',ded:'Удержания',deliv:'Количество доставок',ret:'Количество возврата'};
 const CROLES={art:['артикул','арт'],cost:['себестоимость','закупка','цена закупки','стоимость']};
 const CRN={art:'Артикул',cost:'Себестоимость за 1 шт'};
-const CFG={A:{kw:ROLES,rn:RN,roles:['art','size','stock','sales','way'],after:()=>sup()},B:{kw:ROLES,rn:RN,roles:['art','size','sales'],after:()=>sup()},R:{kw:RROLES,rn:RRN,roles:Object.keys(RROLES),after:()=>rep()},C:{kw:CROLES,rn:CRN,roles:['art','cost'],after:()=>rep()}};
+const CFG={A:{kw:ROLES,rn:RN,roles:['art','name','size','stock','sales','way'],after:()=>sup()},B:{kw:ROLES,rn:RN,roles:['art','name','size','stock','sales'],after:()=>sup()},R:{kw:RROLES,rn:RRN,roles:Object.keys(RROLES),after:()=>rep()},C:{kw:CROLES,rn:CRN,roles:['art','cost'],after:()=>rep()}};
 function guess(h,role,kw=ROLES){const hs=h.map(norm);if(kw===RROLES&&role==='qty'){const i=hs.findIndex(x=>x==='кол-во'||x==='количество');if(i>=0)return i}for(const k of kw[role]){const i=hs.findIndex(x=>x.includes(k)&&!(role==='art'&&x.includes('wb')&&k==='артикул'));if(i>=0)return i}return -1}
 function headerRow(rows,kw=ROLES){let best=0,bs=-1;for(let i=0;i<Math.min(rows.length,20);i++){const sc=rows[i].filter(c=>{const n=norm(c);return Object.values(kw).flat().some(k=>n.includes(k))}).length;if(sc>bs){bs=sc;best=i}}return best}
 function loadFile(which,file){
- document.getElementById('n'+which).textContent='читаю…';
+ document.getElementById('n'+which).textContent=file.size>2e6?'читаю… большой файл, это может занять до минуты':'читаю…';
  const r=new FileReader();r.onload=e=>{try{
-  const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];
+  const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',dense:true,cellStyles:false,cellHTML:false,cellFormula:false});const ws=wb.Sheets[wb.SheetNames[0]];
   const cf=CFG[which];
-  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});const hr=headerRow(rows,cf.kw);
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',blankrows:false});const hr=headerRow(rows,cf.kw);
+  let per='';for(let i=0;i<hr;i++){const t=rows[i].join(' ');const m=t.match(/с\s*(\d{2})\.(\d{2})\.(\d{4})\s*по\s*(\d{2})\.(\d{2})\.(\d{4})/i);if(m&&(which==='A'||which==='B')){const d1=new Date(m[3],m[2]-1,m[1]),d2=new Date(m[6],m[5]-1,m[4]);const days=Math.round((d2-d1)/864e5)+1;if(days>0){document.getElementById('sPer').value=days;per=` · период ${m[1]}.${m[2]}.${m[3]}–${m[4]}.${m[5]}.${m[6]} (${days} дн.) подставлен`}}}
   const head=rows[hr].map(String),data=rows.slice(hr+1).filter(r=>r.some(c=>c!==''));
   const roles=cf.roles;
   const map={};roles.forEach(k=>map[k]=guess(head,k,cf.kw));
-  if(which==='A'&&map.sales===map.stock)map.sales=-1;
+  if(map.sales!=null&&map.sales===map.stock)map.sales=-1;if(map.name!=null&&(map.name===map.art))map.name=-1;
   if(which==='R'){if(map.stor===map.fine)map.fine=-1;if(map.ded===map.fine)map.ded=-1}
   FILES[which]={head,data,map,roles};
-  document.getElementById('n'+which).textContent=file.name+' · строк: '+data.length;document.querySelector(`[data-x="${which}"]`).hidden=false;
+  document.getElementById('n'+which).textContent=file.name+' · строк: '+data.length+per;document.querySelector(`[data-x="${which}"]`).hidden=false;
   drawMap(which);cf.after();
  }catch(err){document.getElementById('n'+which).textContent='не получилось прочитать файл: '+err.message}};
  r.readAsArrayBuffer(file);
@@ -206,11 +208,12 @@ function drawMap(which){const f=FILES[which];const opt=sel=>'<option value="-1">
  document.getElementById('map'+which).innerHTML='<div class="map">'+f.roles.map(k=>`<label>${CFG[which].rn[k]}<select data-w="${which}" data-k="${k}">${opt(f.map[k])}</select></label>`).join('')+'</div>';
  document.querySelectorAll('#map'+which+' select').forEach(s=>s.onchange=()=>{FILES[s.dataset.w].map[s.dataset.k]=+s.value;CFG[s.dataset.w].after()});}
 function fromFiles(){
- const A=FILES.A;if(!A)return null;const m=A.map,key=(a,s)=>norm(a)+'|'+norm(s);const agg=new Map();
- for(const r of A.data){const art=m.art>=0?String(r[m.art]).trim():'';if(!art)continue;const size=m.size>=0?String(r[m.size]).trim():'';const k=key(art,size);
-  const o=agg.get(k)||{art,size,o:0,sl:0,w:0};o.o+=m.stock>=0?num(r[m.stock]):0;if(!FILES.B&&m.sales>=0)o.sl+=num(r[m.sales]);o.w+=m.way>=0?num(r[m.way]):0;agg.set(k,o)}
- const B=FILES.B;if(B){const mb=B.map;for(const r of B.data){const art=mb.art>=0?String(r[mb.art]).trim():'';if(!art)continue;const size=mb.size>=0?String(r[mb.size]).trim():'';const k=key(art,size);
-  const o=agg.get(k)||{art,size,o:0,sl:0,w:0};o.sl+=mb.sales>=0?num(r[mb.sales]):0;agg.set(k,o)}}
+ const P=FILES.A||FILES.B;if(!P)return null;const S=FILES.A&&FILES.B?FILES.B:null;
+ const key=(a,z)=>norm(a)+'|'+norm(z).replace(/\s/g,'');const agg=new Map();
+ const add=(f,useStock,useSales,useWay)=>{const m=f.map;for(const r of f.data){const art=m.art>=0?String(r[m.art]).trim():'';if(!art)continue;const size=m.size>=0?String(r[m.size]).trim():'';const k=key(art,size);
+  const o=agg.get(k)||{art,size,name:'',o:0,sl:0,w:0};if(!o.name&&m.name>=0)o.name=String(r[m.name]).trim();
+  if(useStock&&m.stock>=0)o.o+=num(r[m.stock]);if(useSales&&m.sales>=0)o.sl+=num(r[m.sales]);if(useWay&&m.way>=0)o.w+=num(r[m.way]);agg.set(k,o)}};
+ add(P,true,!S,true);if(S)add(S,false,true,false);
  return [...agg.values()];
 }
 function fromText(){return document.getElementById('sData').value.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>{
@@ -219,16 +222,16 @@ function fromText(){return document.getElementById('sData').value.split('\n').ma
 function sup(){
  const D=num(document.getElementById('sDays').value),L=num(document.getElementById('sLead').value),P=num(document.getElementById('sPer').value)||14;
  const src=fromFiles()||fromText();
- LAST=src.map(({art,size,o,sl,w})=>{const perDay=sl/P,days=perDay>0?(o+w)/perDay:Infinity,need=perDay>0?Math.max(0,Math.ceil(perDay*(D+L)-o-w)):0;
-  let st,c,ord;if(perDay===0){st='Залежался';c='t-mute';ord=3}else if(days<=L){st='СРОЧНО';c='t-bad';ord=0}else if(days<=14){st='Скоро';c='t-warn';ord=1}else{st='Хватает';c='t-ok';ord=2}
-  return {art,size,o,w,sl,perDay,days,need,st,c,ord}}).sort((a,b)=>a.ord-b.ord||a.days-b.days);
+ LAST=src.map(({art,size,name,o,sl,w})=>{const perDay=sl/P,days=perDay>0?(o+w)/perDay:Infinity,need=perDay>0?Math.max(0,Math.ceil(perDay*(D+L)-o-w)):0;
+  let st,c,ord;const rare=perDay>0&&perDay*(D+L)<1;if(perDay===0){st='Залежался';c='t-mute';ord=4}else if(rare){st='Редко';c='t-mute';ord=3}else if(days<=L){st='СРОЧНО';c='t-bad';ord=0}else if(days<=14){st='Скоро';c='t-warn';ord=1}else{st='Хватает';c='t-ok';ord=2}
+  return {art,size,name:name||'',o,w,sl,perDay,days,need:rare?0:need,st,c,ord}}).sort((a,b)=>a.ord-b.ord||a.days-b.days||b.perDay-a.perDay);
  const cnt=s=>LAST.filter(r=>r.st===s).length,tot=LAST.reduce((x,r)=>x+r.need,0);
  const btn=(f,t)=>`<button data-f="${f}" class="${FILTER===f?'on':''}">${t}</button>`;
- document.getElementById('sSum').innerHTML=`<div class="sum">${btn('all','Все · '+LAST.length)}${btn('СРОЧНО','Срочно · '+cnt('СРОЧНО'))}${btn('Скоро','Скоро · '+cnt('Скоро'))}${btn('Хватает','Хватает · '+cnt('Хватает'))}${btn('Залежался','Залежались · '+cnt('Залежался'))}</div><div class="up"><b>Везти всего: ${tot.toLocaleString('ru-RU')} шт</b><button class="btn" id="dl">⬇ Скачать Excel</button></div>`;
+ document.getElementById('sSum').innerHTML=`<div class="sum">${btn('all','Все · '+LAST.length)}${btn('СРОЧНО','Срочно · '+cnt('СРОЧНО'))}${btn('Скоро','Скоро · '+cnt('Скоро'))}${btn('Хватает','Хватает · '+cnt('Хватает'))}${btn('Редко','Редко · '+cnt('Редко'))}${btn('Залежался','Залежались · '+cnt('Залежался'))}</div><div class="up"><b>Везти всего: ${tot.toLocaleString('ru-RU')} шт</b><button class="btn" id="dl">⬇ Скачать Excel</button></div>`;
  document.querySelectorAll('#sSum .sum button').forEach(b=>b.onclick=()=>{FILTER=b.dataset.f;sup()});
  document.getElementById('dl').onclick=dl;
  const view=LAST.filter(r=>FILTER==='all'||r.st===FILTER),show=view.slice(0,200);
- document.getElementById('sOut').innerHTML=show.map(r=>`<div class="it"><div class="it1"><span><b>${r.art}</b> · ${r.size||''}</span><span class="tag ${r.c}">${r.st}</span></div><div class="it2"><span>Остаток <b>${r.o}</b></span><span>В день <b>${r.perDay.toFixed(1).replace('.',',')}</b></span><span>Хватит <b>${isFinite(r.days)?Math.floor(r.days)+' дн':'—'}</b></span><span class="need">Везти <b>${r.need} шт</b></span></div></div>`).join('');
+ document.getElementById('sOut').innerHTML=show.map(r=>`<div class="it"><div class="it1"><span><b>${r.name||r.art}</b> · ${r.size||''}${r.name?`<small class="art">${r.art}</small>`:''}</span><span class="tag ${r.c}">${r.st}</span></div><div class="it2"><span>Остаток <b>${r.o}</b></span><span>В день <b>${(r.perDay>0&&r.perDay<0.1?r.perDay.toFixed(2):r.perDay.toFixed(1)).replace('.',',')}</b></span><span>Хватит <b>${isFinite(r.days)?Math.floor(r.days)+' дн':'—'}</b></span><span class="need">Везти <b>${r.need} шт</b></span></div></div>`).join('');
  document.getElementById('sMore').textContent=view.length>200?`Показаны первые 200 из ${view.length}. Полный список — в Excel.`:'';
 }
 function costs(){const m=new Map();const C=FILES.C;
@@ -263,7 +266,7 @@ function rdl(){const rows=RLAST.map(o=>({'Артикул':o.art,'Продано,
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Юнит-экономика');XLSX.writeFile(wb,'unit-ekonomika-wb.xlsx')}
 function dl(){
  if(typeof XLSX==='undefined'){alert('Не загрузилась библиотека Excel, проверьте интернет');return}
- const rows=LAST.map(r=>({'Артикул':r.art,'Размер':r.size,'Остаток':r.o,'В пути':r.w,'Продажи за период':r.sl,'Продаж в день':+r.perDay.toFixed(2),'Хватит, дней':isFinite(r.days)?Math.floor(r.days):'нет продаж','Везти, шт':r.need,'Статус':r.st}));
+ const rows=LAST.map(r=>({'Название':r.name,'Артикул':r.art,'Размер':r.size,'Остаток':r.o,'В пути':r.w,'Продажи за период':r.sl,'Продаж в день':+r.perDay.toFixed(2),'Хватит, дней':isFinite(r.days)?Math.floor(r.days):'нет продаж','Везти, шт':r.need,'Статус':r.st}));
  const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Поставка');XLSX.writeFile(wb,'postavka-wb.xlsx');
 }
 document.getElementById('fA').onchange=e=>e.target.files[0]&&loadFile('A',e.target.files[0]);
