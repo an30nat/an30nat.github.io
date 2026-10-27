@@ -45,6 +45,7 @@ details summary{cursor:pointer}
 .sum{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .sum button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
 .sum button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.x{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:14px;cursor:pointer}
 .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600}
 .t-bad{background:var(--bad);color:var(--badt)}.t-warn{background:var(--warn);color:var(--warnt)}.t-ok{background:var(--ok);color:var(--okt)}.t-mute{background:var(--line);color:var(--muted)}
 .btn{padding:10px 14px;border-radius:10px;border:0;background:var(--acc);color:#fff;font-weight:600;font-size:15px;cursor:pointer}
@@ -72,6 +73,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
    <option value="rev">Свой % с выручки</option><option value="prof">Свой % с прибыли</option></select></div>
   <div id="ueIn"></div>
   <p class="hint">Цифры запоминаются в этом браузере — в следующий раз всё будет на месте.</p>
+  <button class="x" id="resetUE">↺ Вернуть пример</button>
  </div>
  <div class="card"><h2>Итог на 1 проданную штуку</h2>
   <div class="res" id="ueOut"></div>
@@ -81,9 +83,9 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
  </div>
  <div class="card"><h2>📊 Все артикулы из отчёта WB</h2>
   <p class="hint">Загрузите еженедельный отчёт — «Детализацию» из раздела «Финансовые отчёты» (Excel; если скачался ZIP — сначала распакуйте). Калькулятор сам посчитает цену, комиссию, логистику, выкуп, хранение и штрафы по каждому артикулу. Налог и реклама (ДРР) берутся из полей выше.</p>
-  <div class="up"><label class="btn2">📄 Детализация отчёта<input type="file" id="fR" accept=".xlsx,.xls,.csv" hidden></label><span id="nR" class="hint">не выбран</span></div>
+  <div class="up"><label class="btn2">📄 Детализация отчёта<input type="file" id="fR" accept=".xlsx,.xls,.csv" hidden></label><span id="nR" class="hint">не выбран</span><button class="x" data-x="R" hidden>✕ убрать</button></div>
   <div id="mapR"></div>
-  <div class="up"><label class="btn2">📄 Себестоимость<input type="file" id="fC" accept=".xlsx,.xls,.csv" hidden></label><span id="nC" class="hint">артикул и закупка за 1 шт</span></div>
+  <div class="up"><label class="btn2">📄 Себестоимость<input type="file" id="fC" accept=".xlsx,.xls,.csv" hidden></label><span id="nC" class="hint">артикул и закупка за 1 шт</span><button class="x" data-x="C" hidden>✕ убрать</button></div>
   <div id="mapC"></div>
   <details><summary class="hint">…или вставить себестоимость текстом</summary><textarea id="cText" rows="4" placeholder="Худи-01; 450"></textarea></details>
   <div id="rSum"></div><div id="rOut"></div><p class="hint" id="rMore"></p>
@@ -99,11 +101,12 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
  </div>
  <div class="card"><h2>Загрузить файлы из кабинета WB</h2>
   <p class="hint">Excel или CSV. Подойдут выгрузки «Остатки по складам» и отчёт о продажах/заказах за период. Если остатки и продажи в одном файле — загрузите только первый.</p>
-  <div class="up"><label class="btn2">📄 Файл с остатками<input type="file" id="fA" accept=".xlsx,.xls,.csv" hidden></label><span id="nA" class="hint">не выбран</span></div>
+  <div class="up"><label class="btn2">📄 Файл с остатками<input type="file" id="fA" accept=".xlsx,.xls,.csv" hidden></label><span id="nA" class="hint">не выбран</span><button class="x" data-x="A" hidden>✕ убрать</button></div>
   <div id="mapA"></div>
-  <div class="up"><label class="btn2">📄 Файл с продажами<input type="file" id="fB" accept=".xlsx,.xls,.csv" hidden></label><span id="nB" class="hint">не обязательно</span></div>
+  <div class="up"><label class="btn2">📄 Файл с продажами<input type="file" id="fB" accept=".xlsx,.xls,.csv" hidden></label><span id="nB" class="hint">не обязательно</span><button class="x" data-x="B" hidden>✕ убрать</button></div>
   <div id="mapB"></div>
   <p class="hint">Файлы не уходят в интернет — всё считается на вашем устройстве.</p>
+  <button class="x" id="resetSup">↺ Очистить всё</button>
  </div>
  <details class="card"><summary><b>…или ввести вручную</b></summary>
   <p class="hint">По строке на размер: артикул; размер; остаток; продажи за период; в пути.</p>
@@ -194,7 +197,7 @@ function loadFile(which,file){
   if(which==='A'&&map.sales===map.stock)map.sales=-1;
   if(which==='R'){if(map.stor===map.fine)map.fine=-1;if(map.ded===map.fine)map.ded=-1}
   FILES[which]={head,data,map,roles};
-  document.getElementById('n'+which).textContent=file.name+' · строк: '+data.length;
+  document.getElementById('n'+which).textContent=file.name+' · строк: '+data.length;document.querySelector(`[data-x="${which}"]`).hidden=false;
   drawMap(which);cf.after();
  }catch(err){document.getElementById('n'+which).textContent='не получилось прочитать файл: '+err.message}};
  r.readAsArrayBuffer(file);
@@ -265,6 +268,12 @@ function dl(){
 }
 document.getElementById('fA').onchange=e=>e.target.files[0]&&loadFile('A',e.target.files[0]);
 document.getElementById('fB').onchange=e=>e.target.files[0]&&loadFile('B',e.target.files[0]);
+const DEF={A:'не выбран',B:'не обязательно',R:'не выбран',C:'артикул и закупка за 1 шт'};
+function clearFile(w){FILES[w]=null;document.getElementById('f'+w).value='';document.getElementById('map'+w).innerHTML='';document.getElementById('n'+w).textContent=DEF[w];document.querySelector(`[data-x="${w}"]`).hidden=true;
+ if(w==='R'){['rSum','rOut','rMore'].forEach(id=>document.getElementById(id).innerHTML='');RLAST=[]}CFG[w].after()}
+document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>clearFile(b.dataset.x));
+document.getElementById('resetUE').onclick=()=>{if(!confirm('Вернуть пример и стереть свои цифры?'))return;F.forEach(([id,,,v])=>document.getElementById(id).value=v);taxSel.value='rev6';taxIn.value=6;taxIn.readOnly=true;clearFile('R');clearFile('C');document.getElementById('cText').value='';save();ue()};
+document.getElementById('resetSup').onclick=()=>{clearFile('A');clearFile('B');document.getElementById('sData').value='';FILTER='all';sup()};
 document.getElementById('fR').onchange=e=>e.target.files[0]&&loadFile('R',e.target.files[0]);
 document.getElementById('fC').onchange=e=>e.target.files[0]&&loadFile('C',e.target.files[0]);
 document.getElementById('cText').addEventListener('input',()=>rep());
