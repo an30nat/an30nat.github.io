@@ -187,8 +187,8 @@ const norm=x=>String(x??'').trim().toLowerCase().replace(/ё/g,'е');
 const num=x=>{if(typeof x==='number')return x;const v=parseFloat(String(x??'').replace(/\s/g,'').replace(',','.'));return isNaN(v)?0:v};
 const ROLES={name:['наименование','название','предмет'],art:['артикул продавца','артикул поставщика','артикул','баркод','nm'],size:['размер'],stock:['итого по складам','остаток','остатки','доступно','количество'],sales:['выкупили','продажи','продано','заказано','заказы','заказали'],way:['в пути на склад','в пути до склад','поставка в пути']};
 const RN={name:'Название товара',art:'Артикул',size:'Размер',stock:'Остаток',sales:'Продажи за период',way:'В пути на склад'};
-const RROLES={art:['артикул поставщика','артикул продавца'],type:['обоснование для оплаты','тип документа'],qty:['кол-во','количество'],real:['реализовал товар','вайлдберриз реализовал','цена розничная с учетом'],pay:['к перечислению продавцу','к перечислению'],log:['услуги по доставке'],stor:['хранение'],fine:['общая сумма штрафов','штраф'],acc:['платная приемка','приемка'],ded:['удержания','прочие удержания'],deliv:['количество доставок'],ret:['количество возврата']};
-const RRN={art:'Артикул',type:'Обоснование для оплаты',qty:'Кол-во',real:'WB реализовал товар (Пр)',pay:'К перечислению продавцу',log:'Услуги по доставке',stor:'Хранение',fine:'Штрафы',acc:'Платная приёмка',ded:'Удержания',deliv:'Количество доставок',ret:'Количество возврата'};
+const RROLES={art:['артикул поставщика','артикул продавца'],type:['обоснование для оплаты','тип документа'],qty:['кол-во','количество'],real:['реализовал товар','вайлдберриз реализовал','цена розничная с учетом'],pay:['к перечислению продавцу','к перечислению'],log:['услуги по доставке'],stor:['хранение'],fine:['общая сумма штрафов','штраф'],acc:['платная приемка','операции на приемке','приемка'],tr:['возмещение издержек по перевозке','издержек по перевозке'],ded:['удержания','прочие удержания'],deliv:['количество доставок'],ret:['количество возврата']};
+const RRN={art:'Артикул',type:'Обоснование для оплаты',qty:'Кол-во',real:'WB реализовал товар (Пр)',pay:'К перечислению продавцу',log:'Услуги по доставке',stor:'Хранение',fine:'Штрафы',acc:'Платная приёмка',tr:'Возмещение издержек по перевозке',ded:'Удержания',deliv:'Количество доставок',ret:'Количество возврата'};
 const CROLES={art:['артикул','арт'],cost:['себестоимость','закупка','цена закупки','стоимость']};
 const CRN={art:'Артикул',cost:'Себестоимость за 1 шт'};
 const CFG={A:{kw:ROLES,rn:RN,roles:['art','name','size','stock','sales','way'],after:()=>sup()},B:{kw:ROLES,rn:RN,roles:['art','name','size','stock','sales'],after:()=>sup()},R:{kw:RROLES,rn:RRN,roles:Object.keys(RROLES),after:()=>rep()},C:{kw:CROLES,rn:CRN,roles:['art','cost'],after:()=>rep()}};
@@ -249,20 +249,20 @@ function rep(){
  const R=FILES.R,box=document.getElementById('rOut');if(!R){return}
  const m=R.map,v=(r,k)=>m[k]>=0?num(r[m[k]]):0,g=id=>num(document.getElementById(id).value);
  const ads=g('ads')/100,tax=g('tax')/100,onP=taxOnProfit(),cm=costs();
- const A=new Map();let un={log:0,stor:0,fine:0,acc:0,ded:0};
- for(const r of R.data){const art=m.art>=0?String(r[m.art]).trim():'';const t=m.type>=0?norm(r[m.type]):'';
+ const A=new Map();let un={log:0,stor:0,fine:0,acc:0,ded:0,tr:0};
+ for(const r of R.data){let art=m.art>=0?String(r[m.art]).trim():'';if(norm(art)==='неопознанный товар')art='';const t=m.type>=0?norm(r[m.type]):'';
   const isSale=t.includes('продаж'),isRet=t.includes('возврат');const sign=isRet?-1:1;
-  if(!art){un.log+=v(r,'log');un.stor+=v(r,'stor');un.fine+=v(r,'fine');un.acc+=v(r,'acc');un.ded+=v(r,'ded');continue}
-  const k=norm(art);const o=A.get(k)||{art,sold:0,real:0,pay:0,log:0,stor:0,fine:0,acc:0,ded:0,deliv:0,ret:0};
+  if(!art){un.log+=v(r,'log');un.stor+=v(r,'stor');un.fine+=v(r,'fine');un.acc+=v(r,'acc');un.ded+=v(r,'ded');un.tr+=v(r,'tr');continue}
+  const k=norm(art);const o=A.get(k)||{art,sold:0,real:0,pay:0,log:0,stor:0,fine:0,acc:0,ded:0,tr:0,deliv:0,ret:0};
   if(isSale||isRet){o.sold+=sign*v(r,'qty');o.real+=sign*v(r,'real');o.pay+=sign*v(r,'pay')}
-  o.log+=v(r,'log');o.stor+=v(r,'stor');o.fine+=v(r,'fine');o.acc+=v(r,'acc');o.ded+=v(r,'ded');o.deliv+=v(r,'deliv');o.ret+=v(r,'ret');A.set(k,o)}
+  o.log+=v(r,'log');o.stor+=v(r,'stor');o.fine+=v(r,'fine');o.acc+=v(r,'acc');o.ded+=v(r,'ded');o.tr+=v(r,'tr');o.deliv+=v(r,'deliv');o.ret+=v(r,'ret');A.set(k,o)}
  RLAST=[...A.values()].map(o=>{const cost=cm.has(norm(o.art))?cm.get(norm(o.art)):null;const cogs=cost==null?0:cost*o.sold;const adv=o.real*ads;
-  const pre=o.pay-o.log-o.stor-o.fine-o.acc-o.ded-cogs-adv;const tx=onP?tax*Math.max(0,pre):tax*o.real;const prof=pre-tx;
-  return {...o,cost,cogs,adv,tx,prof,price:o.sold?o.real/o.sold:0,comPct:o.real?(o.real-o.pay)/o.real:0,unit:o.sold?prof/o.sold:0,marg:o.real?prof/o.real:0,vyk:o.deliv?Math.max(0,o.deliv-o.ret)/o.deliv:null}}).sort((a,b)=>a.prof-b.prof);
- const tot=RLAST.reduce((x,o)=>x+o.prof,0),unT=un.log+un.stor+un.fine+un.acc+un.ded,noCost=RLAST.filter(o=>o.cost==null&&o.sold>0).length,minus=RLAST.filter(o=>o.prof<0).length;
+  const pre=o.pay-o.log-o.stor-o.fine-o.acc-o.ded-o.tr-cogs-adv;const tx=onP?tax*Math.max(0,pre):tax*o.real;const prof=pre-tx;
+  return {...o,cost,cogs,adv,tx,prof,price:o.sold?o.real/o.sold:0,comPct:o.real?(o.real-o.pay)/o.real:0,unit:o.sold?prof/o.sold:0,marg:o.real?prof/o.real:0,vyk:o.deliv?Math.min(1,Math.max(0,o.sold)/o.deliv):null}}).sort((a,b)=>a.prof-b.prof);
+ const tot=RLAST.reduce((x,o)=>x+o.prof,0),unT=un.log+un.stor+un.fine+un.acc+un.ded+un.tr,noCost=RLAST.filter(o=>o.cost==null&&o.sold>0).length,minus=RLAST.filter(o=>o.prof<0).length;
  const btn=(f,t)=>`<button data-f="${f}" class="${RFILTER===f?'on':''}">${t}</button>`;
  document.getElementById('rSum').innerHTML=`<div class="res" style="margin:12px 0"><div class="box ${tot-unT<0?'bad':''}"><span>Прибыль за период</span><b>${rub(tot-unT)}</b><span>с учётом расходов без артикула</span></div><div class="box ${minus?'bad':''}"><span>Артикулов в минус</span><b>${minus} из ${RLAST.length}</b></div></div>`+
-  (unT?`<p class="hint">Расходы без артикула (хранение, приёмка, штрафы и удержания общей строкой): <b>${rub(unT)}</b> — учтены в общей прибыли, но не разнесены по товарам.</p>`:'')+
+  (unT?`<p class="hint">Расходы без артикула (хранение, приёмка, штрафы, удержания общей строкой и логистика «неопознанного товара»): <b>${rub(unT)}</b> — учтены в общей прибыли, но не разнесены по товарам.</p>`:'')+
   (noCost?`<p class="hint" style="color:var(--badt)">У ${noCost} артикулов нет себестоимости — прибыль по ним завышена. Загрузите файл себестоимости.</p>`:'')+
   `<div class="sum">${btn('all','Все')}${btn('minus','В минус · '+minus)}</div><div class="up"><button class="btn" id="rdl">⬇ Скачать Excel</button></div>`;
  document.querySelectorAll('#rSum .sum button').forEach(b=>b.onclick=()=>{RFILTER=b.dataset.f;rep()});document.getElementById('rdl').onclick=rdl;
@@ -270,7 +270,7 @@ function rep(){
  box.innerHTML=show.map(o=>`<div class="it"><div class="it1"><span><b>${o.art}</b> · продано ${o.sold} шт</span><span class="tag ${o.prof<0?'t-bad':'t-ok'}">${rub(o.prof)}</span></div><div class="it2"><span>Цена <b>${rub(o.price)}</b></span><span>Комиссия <b>${pct(o.comPct)}</b></span><span>С 1 шт <b>${rub(o.unit)}</b></span><span class="need">Маржа <b>${pct(o.marg)}</b></span></div></div>`).join('');
  document.getElementById('rMore').textContent=view.length>200?`Показаны первые 200 из ${view.length}. Полный список — в Excel.`:'';
 }
-function rdl(){const rows=RLAST.map(o=>({'Артикул':o.art,'Продано, шт':o.sold,'Средняя цена':Math.round(o.price),'WB реализовал':Math.round(o.real),'К перечислению':Math.round(o.pay),'Комиссия, %':+(o.comPct*100).toFixed(1),'Логистика':Math.round(o.log),'Хранение':Math.round(o.stor),'Штрафы':Math.round(o.fine),'Приёмка':Math.round(o.acc),'Удержания':Math.round(o.ded),'Себестоимость':o.cost==null?'нет данных':Math.round(o.cogs),'Реклама (ДРР)':Math.round(o.adv),'Налог':Math.round(o.tx),'Прибыль':Math.round(o.prof),'Прибыль с 1 шт':Math.round(o.unit),'Маржа, %':+(o.marg*100).toFixed(1),'Выкуп, %':o.vyk==null?'':+(o.vyk*100).toFixed(0)}));
+function rdl(){const rows=RLAST.map(o=>({'Артикул':o.art,'Продано, шт':o.sold,'Средняя цена':Math.round(o.price),'WB реализовал':Math.round(o.real),'К перечислению':Math.round(o.pay),'Комиссия, %':+(o.comPct*100).toFixed(1),'Логистика':Math.round(o.log),'Хранение':Math.round(o.stor),'Штрафы':Math.round(o.fine),'Приёмка':Math.round(o.acc),'Удержания':Math.round(o.ded),'Возмещение перевозки':Math.round(o.tr),'Себестоимость':o.cost==null?'нет данных':Math.round(o.cogs),'Реклама (ДРР)':Math.round(o.adv),'Налог':Math.round(o.tx),'Прибыль':Math.round(o.prof),'Прибыль с 1 шт':Math.round(o.unit),'Маржа, %':+(o.marg*100).toFixed(1),'Выкуп, %':o.vyk==null?'':+(o.vyk*100).toFixed(0)}));
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Юнит-экономика');XLSX.writeFile(wb,'unit-ekonomika-wb.xlsx')}
 function dl(){
  if(typeof XLSX==='undefined'){alert('Не загрузилась библиотека Excel, проверьте интернет');return}
