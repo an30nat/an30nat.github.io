@@ -187,12 +187,12 @@ const norm=x=>String(x??'').trim().toLowerCase().replace(/ё/g,'е');
 const num=x=>{if(typeof x==='number')return x;const v=parseFloat(String(x??'').replace(/\s/g,'').replace(',','.'));return isNaN(v)?0:v};
 const ROLES={name:['наименование','название','предмет'],art:['артикул продавца','артикул поставщика','артикул','баркод','nm'],size:['размер'],stock:['итого по складам','остаток','остатки','доступно','количество'],sales:['выкупили','продажи','продано','заказано','заказы','заказали'],way:['в пути на склад','в пути до склад','поставка в пути']};
 const RN={name:'Название товара',art:'Артикул',size:'Размер',stock:'Остаток',sales:'Продажи за период',way:'В пути на склад'};
-const RROLES={art:['артикул поставщика','артикул продавца'],type:['обоснование для оплаты','тип документа'],qty:['кол-во','количество'],real:['реализовал товар','вайлдберриз реализовал','цена розничная с учетом'],pay:['к перечислению продавцу','к перечислению'],log:['услуги по доставке'],stor:['хранение'],fine:['общая сумма штрафов','штраф'],acc:['платная приемка','операции на приемке','приемка'],tr:['возмещение издержек по перевозке','издержек по перевозке'],ded:['удержания','прочие удержания'],deliv:['количество доставок'],ret:['количество возврата']};
-const RRN={art:'Артикул',type:'Обоснование для оплаты',qty:'Кол-во',real:'WB реализовал товар (Пр)',pay:'К перечислению продавцу',log:'Услуги по доставке',stor:'Хранение',fine:'Штрафы',acc:'Платная приёмка',tr:'Возмещение издержек по перевозке',ded:'Удержания',deliv:'Количество доставок',ret:'Количество возврата'};
-const CROLES={art:['артикул','арт'],cost:['себестоимость','закупка','цена закупки','стоимость']};
-const CRN={art:'Артикул',cost:'Себестоимость за 1 шт'};
-const CFG={A:{kw:ROLES,rn:RN,roles:['art','name','size','stock','sales','way'],after:()=>sup()},B:{kw:ROLES,rn:RN,roles:['art','name','size','stock','sales'],after:()=>sup()},R:{kw:RROLES,rn:RRN,roles:Object.keys(RROLES),after:()=>rep()},C:{kw:CROLES,rn:CRN,roles:['art','cost'],after:()=>rep()}};
-function guess(h,role,kw=ROLES){const hs=h.map(norm);if(kw===RROLES&&role==='qty'){const i=hs.findIndex(x=>x==='кол-во'||x==='количество');if(i>=0)return i}for(const k of kw[role]){const i=hs.findIndex(x=>x.includes(k)&&!(role==='art'&&x.includes('wb')&&k==='артикул'));if(i>=0)return i}return -1}
+const RROLES={art:['артикул поставщика','артикул продавца'],type:['обоснование для оплаты','тип документа'],qty:['кол-во','количество'],real:['реализовал товар','вайлдберриз реализовал','цена розничная с учетом'],pay:['к перечислению продавцу','к перечислению'],log:['услуги по доставке'],stor:['хранение'],fine:['общая сумма штрафов','штраф'],acc:['платная приемка','операции на приемке','приемка'],tr:['возмещение издержек по перевозке','издержек по перевозке'],ded:['удержания','прочие удержания'],size:['размер'],deliv:['количество доставок'],ret:['количество возврата']};
+const RRN={art:'Артикул',type:'Обоснование для оплаты',qty:'Кол-во',real:'WB реализовал товар (Пр)',pay:'К перечислению продавцу',log:'Услуги по доставке',stor:'Хранение',fine:'Штрафы',acc:'Платная приёмка',tr:'Возмещение издержек по перевозке',ded:'Удержания',size:'Размер',deliv:'Количество доставок',ret:'Количество возврата'};
+const CROLES={art:['артикул','арт'],size:['размер'],cost:['себестоимость','закупка','цена закупки','стоимость']};
+const CRN={art:'Артикул',size:'Размер (если себестоимость разная)',cost:'Себестоимость за 1 шт'};
+const CFG={A:{kw:ROLES,rn:RN,roles:['art','name','size','stock','sales','way'],after:()=>sup()},B:{kw:ROLES,rn:RN,roles:['art','name','size','stock','sales'],after:()=>sup()},R:{kw:RROLES,rn:RRN,roles:Object.keys(RROLES),after:()=>rep()},C:{kw:CROLES,rn:CRN,roles:['art','size','cost'],after:()=>rep()}};
+function guess(h,role,kw=ROLES){const hs=h.map(norm);if(role==='size'){const i=hs.findIndex(x=>x==='размер');if(i>=0)return i}if(kw===RROLES&&role==='qty'){const i=hs.findIndex(x=>x==='кол-во'||x==='количество');if(i>=0)return i}for(const k of kw[role]){const i=hs.findIndex(x=>x.includes(k)&&!(role==='art'&&x.includes('wb')&&k==='артикул'));if(i>=0)return i}return -1}
 function headerRow(rows,kw=ROLES){let best=0,bs=-1;for(let i=0;i<Math.min(rows.length,20);i++){const sc=rows[i].filter(c=>{const n=norm(c);return Object.values(kw).flat().some(k=>n.includes(k))}).length;if(sc>bs){bs=sc;best=i}}return best}
 function loadFile(which,file){
  document.getElementById('n'+which).textContent=file.size>2e6?'читаю… большой файл, это может занять до минуты':'читаю…';
@@ -242,8 +242,9 @@ function sup(){
  document.getElementById('sOut').innerHTML=show.map(r=>`<div class="it"><div class="it1"><span><b>${r.name||r.art}</b> · ${r.size||''}${r.name?`<small class="art">${r.art}</small>`:''}</span><span class="tag ${r.c}">${r.st}</span></div><div class="it2"><span>Остаток <b>${r.o}</b></span><span>В день <b>${(r.perDay>0&&r.perDay<0.1?r.perDay.toFixed(2):r.perDay.toFixed(1)).replace('.',',')}</b></span><span>Хватит <b>${isFinite(r.days)?Math.floor(r.days)+' дн':'—'}</b></span><span class="need">Везти <b>${r.need} шт</b></span></div></div>`).join('');
  document.getElementById('sMore').textContent=view.length>200?`Показаны первые 200 из ${view.length}. Полный список — в Excel.`:'';
 }
+const szn=x=>norm(x).replace(/\s/g,'');
 function costs(){const m=new Map();const C=FILES.C;
- if(C){for(const r of C.data){const a=C.map.art>=0?norm(r[C.map.art]):'';if(a)m.set(a,num(r[C.map.cost]))}}
+ if(C){for(const r of C.data){const a=C.map.art>=0?norm(r[C.map.art]):'';if(a){const c=num(r[C.map.cost]);m.set(a,c);if(C.map.size>=0)m.set(a+'|'+szn(r[C.map.size]),c)}}}
  document.getElementById('cText').value.split('\n').forEach(l=>{const a=l.split(/[;\t]/);if(a.length>=2&&a[0].trim())m.set(norm(a[0]),num(a[1]))});return m}
 function rep(){
  const R=FILES.R,box=document.getElementById('rOut');if(!R){return}
@@ -253,10 +254,10 @@ function rep(){
  for(const r of R.data){let art=m.art>=0?String(r[m.art]).trim():'';if(norm(art)==='неопознанный товар')art='';const t=m.type>=0?norm(r[m.type]):'';
   const isSale=t.includes('продаж'),isRet=t.includes('возврат');const sign=isRet?-1:1;
   if(!art){un.log+=v(r,'log');un.stor+=v(r,'stor');un.fine+=v(r,'fine');un.acc+=v(r,'acc');un.ded+=v(r,'ded');un.tr+=v(r,'tr');continue}
-  const k=norm(art);const o=A.get(k)||{art,sold:0,real:0,pay:0,log:0,stor:0,fine:0,acc:0,ded:0,tr:0,deliv:0,ret:0};
-  if(isSale||isRet){o.sold+=sign*v(r,'qty');o.real+=sign*v(r,'real');o.pay+=sign*v(r,'pay')}
+  const k=norm(art);const o=A.get(k)||{art,sold:0,real:0,pay:0,log:0,stor:0,fine:0,acc:0,ded:0,tr:0,deliv:0,ret:0,cg:0};
+  if(isSale||isRet){const sz=m.size>=0?szn(r[m.size]):'',q=v(r,'qty'),c=cm.has(k+'|'+sz)?cm.get(k+'|'+sz):cm.get(k);if(c!=null)o.cg+=sign*q*c;o.sold+=sign*q;o.real+=sign*v(r,'real');o.pay+=sign*v(r,'pay')}
   o.log+=v(r,'log');o.stor+=v(r,'stor');o.fine+=v(r,'fine');o.acc+=v(r,'acc');o.ded+=v(r,'ded');o.tr+=v(r,'tr');o.deliv+=v(r,'deliv');o.ret+=v(r,'ret');A.set(k,o)}
- RLAST=[...A.values()].map(o=>{const cost=cm.has(norm(o.art))?cm.get(norm(o.art)):null;const cogs=cost==null?0:cost*o.sold;const adv=o.real*ads;
+ RLAST=[...A.values()].map(o=>{const cost=cm.has(norm(o.art))?cm.get(norm(o.art)):null;const cogs=o.cg;const adv=o.real*ads;
   const pre=o.pay-o.log-o.stor-o.fine-o.acc-o.ded-o.tr-cogs-adv;const tx=onP?tax*Math.max(0,pre):tax*o.real;const prof=pre-tx;
   return {...o,cost,cogs,adv,tx,prof,price:o.sold?o.real/o.sold:0,comPct:o.real?(o.real-o.pay)/o.real:0,unit:o.sold?prof/o.sold:0,marg:o.real?prof/o.real:0,vyk:o.deliv?Math.min(1,Math.max(0,o.sold)/o.deliv):null}}).sort((a,b)=>a.prof-b.prof);
  const tot=RLAST.reduce((x,o)=>x+o.prof,0),unT=un.log+un.stor+un.fine+un.acc+un.ded+un.tr,noCost=RLAST.filter(o=>o.cost==null&&o.sold>0).length,minus=RLAST.filter(o=>o.prof<0).length;
