@@ -53,6 +53,7 @@ details summary{cursor:pointer}
 .hint{color:var(--muted);font-size:13px}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
 .tblwrap{overflow-x:auto}
+.kom{margin-bottom:6px}#komQ{text-align:left;margin:4px 0}#komList button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:9px 4px;font-size:15px;cursor:pointer}#komList button small{color:var(--muted)}#komList button b{float:right;color:var(--acc)}
 footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 @media (max-width:480px){.row{grid-template-columns:1fr 110px}.res{grid-template-columns:1fr}}
 </style>
@@ -69,6 +70,12 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 
 <section id="ue">
  <div class="card"><h2>Ваши цифры — сейчас там пример</h2>
+  <div class="kom">
+   <div class="row"><label>Что продаёте<small>начните вводить предмет — комиссия подставится сама</small></label><select id="komSch"><option value="0">FBW — склад WB</option><option value="1">FBS — свой склад</option><option value="2">DBS / DBW</option><option value="3">C&amp;C самовывоз</option><option value="4">EDBS экспресс</option><option value="5">Бронирование</option></select></div>
+   <input id="komQ" type="search" autocomplete="off" placeholder="Например: худи, кроссовки, чайник">
+   <div id="komList"></div>
+   <p class="hint" id="komNote"></p>
+  </div>
   <div class="row"><label>Система налогообложения</label><select id="taxSel">
    <option value="rev6">УСН «доходы» 6%</option><option value="prof15">УСН «доходы − расходы» 15%</option>
    <option value="rev">Свой % с выручки</option><option value="prof">Свой % с прибыли</option></select></div>
@@ -137,7 +144,7 @@ const F=[
  ['cogs','Себестоимость за 1 шт','закупка',450,'₽'],
  ['pack','Упаковка и маркировка','пакет, стикеры, «Честный знак»',30,'₽'],
  ['del','Доставка до склада за 1 шт','партия ÷ штук',25,'₽'],
- ['com','Комиссия WB','по вашей категории',24.5,'%'],
+ ['com','Комиссия WB','подставится по предмету выше или впишите сами',24.5,'%'],
  ['log','Логистика до покупателя','за 1 шт',80,'₽'],
  ['back','Обратная логистика','при невыкупе, за 1 шт',50,'₽'],
  ['vyk','Процент выкупа','одежда 30–70%, остальное 85–95%',75,'%'],
@@ -276,7 +283,7 @@ const DEF={A:'не выбран',B:'не обязательно',R:'не выб�
 function clearFile(w){FILES[w]=null;document.getElementById('f'+w).value='';document.getElementById('map'+w).innerHTML='';document.getElementById('n'+w).textContent=DEF[w];document.querySelector(`[data-x="${w}"]`).hidden=true;
  if(w==='R'){['rSum','rOut','rMore'].forEach(id=>document.getElementById(id).innerHTML='');RLAST=[]}CFG[w].after()}
 document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>clearFile(b.dataset.x));
-document.getElementById('resetUE').onclick=()=>{if(!confirm('Вернуть пример и стереть свои цифры?'))return;F.forEach(([id,,,v])=>document.getElementById(id).value=v);taxSel.value='rev6';taxIn.value=6;taxIn.readOnly=true;clearFile('R');clearFile('C');document.getElementById('cText').value='';save();ue()};
+document.getElementById('resetUE').onclick=()=>{if(!confirm('Вернуть пример и стереть свои цифры?'))return;komQ.value='';komList.innerHTML='';komNote.textContent='';KSEL=null;try{localStorage.removeItem('wbkom')}catch(e){};F.forEach(([id,,,v])=>document.getElementById(id).value=v);taxSel.value='rev6';taxIn.value=6;taxIn.readOnly=true;clearFile('R');clearFile('C');document.getElementById('cText').value='';save();ue()};
 document.getElementById('clrText').onclick=()=>{document.getElementById('sData').value='';sup()};
 document.getElementById('clrCost').onclick=()=>{document.getElementById('cText').value='';rep()};
 document.getElementById('resetSup').onclick=()=>{clearFile('A');clearFile('B');document.getElementById('sData').value='';FILTER='all';sup()};
@@ -293,6 +300,24 @@ function save(){try{localStorage.setItem('wbcalc',JSON.stringify(Object.fromEntr
 try{const d=JSON.parse(localStorage.getItem('wbcalc')||'{}');KEEP.forEach(id=>{if(d[id]!=null)document.getElementById(id).value=d[id]})}catch(e){}
 taxIn.readOnly=taxSel.value.length>4;
 document.querySelectorAll('input:not([type=file])').forEach(e=>e.addEventListener('input',save));
+
+// Комиссия по предмету: таблица WB (kom-wb.json) грузится один раз, при первом вводе
+let KOM=null,KOMP=null,KSEL=null;
+const komQ=document.getElementById('komQ'),komList=document.getElementById('komList'),komSch=document.getElementById('komSch'),komNote=document.getElementById('komNote');
+function komLoad(){if(!KOMP)KOMP=fetch('kom-wb.json').then(r=>r.json()).then(d=>{KOM=d;KOM.low=d.r.map(x=>x[1].toLowerCase())}).catch(()=>{komNote.textContent='Таблица комиссий не загрузилась — впишите комиссию вручную.'});return KOMP}
+function komSave(){try{localStorage.setItem('wbkom',JSON.stringify({q:komQ.value,s:komSch.value,i:KSEL}))}catch(e){}}
+function komApply(i){KSEL=i;const r=KOM.r[i],v=r[2+ +komSch.value];komList.innerHTML='';komQ.value=r[1];
+ if(v==null){komNote.textContent='Для этой схемы в таблице нет ставки — впишите вручную.';komSave();return}
+ document.getElementById('com').value=v;komNote.textContent=`${KOM.c[r[0]]} → ${r[1]}: комиссия ${String(v).replace('.',',')}% (${komSch.options[komSch.selectedIndex].text}). Подставлено в поле «Комиссия WB».`;
+ save();komSave();ue()}
+function komFind(){const q=komQ.value.trim().toLowerCase();KSEL=null;komNote.textContent='';if(q.length<2){komList.innerHTML='';return}
+ komLoad().then(()=>{if(!KOM)return;const a=[],b=[];KOM.low.forEach((s,i)=>{if(s.startsWith(q))a.push(i);else if(s.includes(q)||KOM.c[KOM.r[i][0]].toLowerCase().includes(q))b.push(i)});
+  const res=a.concat(b),sch=2+ +komSch.value;
+  komList.innerHTML=res.length?res.slice(0,8).map(i=>{const r=KOM.r[i];return `<button data-i="${i}">${r[1]} <small>· ${KOM.c[r[0]]}</small><b>${r[sch]==null?'—':String(r[sch]).replace('.',',')+'%'}</b></button>`}).join('')+(res.length>8?`<p class="hint">Ещё ${res.length-8} — уточните слово.</p>`:''):'<p class="hint">Не нашла такой предмет — попробуйте другое слово или впишите комиссию вручную.</p>'})}
+komQ.addEventListener('input',e=>{e.stopImmediatePropagation();komFind()},true);
+komList.onclick=e=>{const b=e.target.closest('button');if(b)komApply(+b.dataset.i)};
+komSch.onchange=()=>{if(KSEL!=null)komApply(KSEL);else{komSave();komFind()}};
+try{const k=JSON.parse(localStorage.getItem('wbkom')||'{}');if(k.s!=null)komSch.value=k.s;if(k.q)komQ.value=k.q;if(k.i!=null)komLoad().then(()=>{if(KOM&&KOM.r[k.i]){KSEL=k.i;const r=KOM.r[k.i];komNote.textContent=`${KOM.c[r[0]]} → ${r[1]}: ставка из таблицы WB.`}})}catch(e){}
 ue();sup();
 </script>
 </body>
